@@ -2,7 +2,7 @@
 
 ## Title: Trove Tally
 ## Author: Bettiold
-## Version: 1.22b
+## Version: 1.23b
 ## Notes: List of items you can add to your collection
 ## IconTexture: 5550733
 ## SavedVariables: iconDegrees,settings
