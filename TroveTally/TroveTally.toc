@@ -1,0 +1,11 @@
+## Interface: 110000
+
+## Title: Trove Tally
+## Author: Bettiold
+## Version: 1.22b
+## Notes: List of items you can add to your collection
+## IconTexture: 5550733
+## SavedVariables: iconDegrees,settings
+
+db.lua
+main.lua
