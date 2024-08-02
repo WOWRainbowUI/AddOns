@@ -33,41 +33,41 @@ local scroll = 0
 --216455,"NOTHING",
 --215903,"NOTHING",
 local src = {
-  JADE = "翡玉林",
-  VALLEY = "四風峽",
-  VALE = "恆春谷",
-  KUNLAI = "崑崙峰",
-  TOWNLONG = "螳螂荒原",
-  KRASARANG = "喀薩朗蠻荒",
-  DREAD = "悚然荒野",
-  THUNDER = "雷神島",
-  GIANTS = "巨獸島",
-  TIMELESS = "永恆之島",
-  SCENARIOS_N = "事件 (普通)",
-  SCENARIOS_NH = "事件 (普通/英雄)",
-  SCENARIOS_H = "事件 (英雄)",
-  DUNGEONS_N = "地城 (普通)",
-  DUNGEONS_H = "地城 (英雄)",
-  SIEGE_LFR = "圍攻奧格瑪 (團隊搜尋器)",
-  SIEGE_N = "圍攻奧格瑪 (普通)",
-  SIEGE_H = "圍攻奧格瑪 (英雄)",
-  SIEGE_M = "圍攻奧格瑪 (史詩)",
-  THRONE_LFR = "雷霆王座 (團隊搜尋器)",
-  THRONE_N = "雷霆王座 (普通)",
-  THRONE_H = "雷霆王座 (英雄)",
-  T14_LFR = "T14套裝團隊副本 (團隊搜尋器)",
-  T14_N = "T14套裝團隊副本 (普通)",
-  T14_H = "T14套裝團隊副本 (英雄)",
-  PYTHAGORUS = "畢達哥拉斯",
-  DURUS = "杜魯斯",
-  AEONICUS = "埃歐尼克斯",
-  ARTUROS = "亞特魯斯",
-  LARAH = "拉拉·樹彎者",
-  JAKKUS = "宗師賈克斯",
-  HEMET = "赫米特·奈辛瓦里十七世",
-  HOROS = "霍魯斯",
-  ERUS = "艾魯斯",
-  AMUUL = "追憶者阿穆爾"
+  JADE = "The Jade Forest",
+  VALLEY = "Valley of the Four Winds",
+  VALE = "Vale of Eternal Blossoms",
+  KUNLAI = "Kun-Lai Summit",
+  TOWNLONG = "Townlong Steppes",
+  KRASARANG = "Krasarang Wilds",
+  DREAD = "Dread Wastes",
+  THUNDER = "Isle of Thunder",
+  GIANTS = "Isle of Giants",
+  TIMELESS = "Timeless Isle",
+  SCENARIOS_N = "Scenarios (Normal)",
+  SCENARIOS_NH = "Scenarios (Normal/Heroic)",
+  SCENARIOS_H = "Scenarios (Heroic)",
+  DUNGEONS_N = "Dungeons (Normal)",
+  DUNGEONS_H = "Dungeons (Heroic)",
+  SIEGE_LFR = "Siege of Orgrimmar (LFR)",
+  SIEGE_N = "Siege of Orgrimmar (Normal)",
+  SIEGE_H = "Siege of Orgrimmar (Heroic)",
+  SIEGE_M = "Siege of Orgrimmar (Mythic)",
+  THRONE_LFR = "Throne of Thunder (LFR)",
+  THRONE_N = "Throne of Thunder (Normal)",
+  THRONE_H = "Throne of Thunder (Heroic)",
+  T14_LFR = "Tier 14 Raids (LFR)",
+  T14_N = "Tier 14 Raids (Normal)",
+  T14_H = "Tier 14 Raids (Heroic)",
+  PYTHAGORUS = "Pythagorus",
+  DURUS = "Durus",
+  AEONICUS = "Aeonicus",
+  ARTUROS = "Arturos",
+  LARAH = "Larah Treebender",
+  JAKKUS = "Grandmaster Jakkus",
+  HEMET = "Hemet Nesingwary XVII",
+  HOROS = "Horos",
+  ERUS = "Erus",
+  AMUUL = "Remembrancer Amuul"
 }
 local function srcs(...) return table.concat({...},", ") end
 local data = {
@@ -935,38 +935,38 @@ playerClass.name,_,playerClass.index = UnitClass("player")
 local playerSpecs = {}
 local myGUID = nil
 local lists = {
-  [1] = " |cffFFC000| |r混搭再造: 潘達利亞",
+  [1] = " |cffFFC000| |rRemix: MoP",
   [2] = "",
-  [4] = " |cffFFC000| |r設定",
-  [5] = " |cffFFC000| |r武器庫與塑形套裝",
-  [6] = " |cffFFC000| |r無限市集",
-  [7] = " |cffFFC000| |r坐騎",
-  [8] = " |cffFFC000| |r玩具",
-  [9] = " |cffFFC000| |r其他",
-  [10] = " |cffFFC000| |r巨龍崛起玩具",
-  [11] = " |cffFFC000| |r璀燦回音"
+  [4] = " |cffFFC000| |rSettings",
+  [5] = " |cffFFC000| |rArsenals & Ensembles",
+  [6] = " |cffFFC000| |rInfinite Bazaar",
+  [7] = " |cffFFC000| |rMounts",
+  [8] = " |cffFFC000| |rToys",
+  [9] = " |cffFFC000| |rOther",
+  [10] = " |cffFFC000| |rDragonflight Toys",
+  [11] = " |cffFFC000| |rRadiant Echoes"
 }
 
 local function populateSpec()
-  memory[2][1] = {itemID = nil, text = "開啟設定選項", name = "設定", specID = -3, uid = uid()}
-  memory[2][2] = {itemID = nil, text = "只顯示璀燦回音物品", name = "璀燦回音", specID = -18, uid = uid()}
-  memory[2][3] = {itemID = nil, text = "只顯示巨龍崛起玩具", name = "巨龍崛起玩具", specID = -15, uid = uid()}
-  memory[2][4] = {itemID = nil, text = "開啟無限市集", name = "無限市集", specID = -6, uid = uid()}
-  memory[2][5] = {itemID = nil, text = "不進行任何過濾", name = "全部", specID = -2, uid = uid()}
-  for i = GetNumSpecializations(), 1, -1 do
+  memory[2][1] = {itemID = nil,text = "Open the settings options",name = "Settings",specID = -3,uid = uid()}
+  memory[2][2] = {itemID = nil,text = "Filter only Radiant Echoes items",name = "Radiant Echoes",specID = -18,uid = uid()}
+  memory[2][3] = {itemID = nil,text = "Filter only Dragonflight toys",name = "Dragonflight Toys",specID = -15,uid = uid()}
+  memory[2][4] = {itemID = nil,text = "Open the Infinite Bazaar",name = "Infinite Bazaar",specID = -6,uid = uid()}
+  memory[2][5] = {itemID = nil,text = "Don't filter anything",name = "Everything",specID = -2,uid = uid()}
+  for i = GetNumSpecializations(),1,-1 do
     local specID, specName = GetSpecializationInfo(i)
-    table.insert(playerSpecs, specID)
-    table.insert(memory[2], {itemID = nil, text = "只顯示" .. specName .. "專精可獲得的物品", name = specName, specID = specID, uid = uid()})
+    table.insert(playerSpecs,specID)
+    table.insert(memory[2],{itemID = nil,text = "Filter only items that can be looted with "..specName.." specialization",name = specName,specID = specID,uid = uid()})
   end
-  table.insert(memory[2], {itemID = nil, text = "只顯示" .. playerClass.name .. "可獲得的物品", name = playerClass.name, specID = -1, uid = uid()})
+  table.insert(memory[2],{itemID = nil,text = "Filter only items that can be looted by "..playerClass.name,name = playerClass.name,specID = -1,uid = uid()})
 
-  memory[6][1] = {itemID = nil, text = "過濾其他所有內容", name = "其他", specID = -14, uid = uid()}
-  memory[6][2] = {itemID = nil, text = "只顯示玩具", name = "玩具", specID = -11, uid = uid()}
-  memory[6][3] = {itemID = nil, text = "只顯示坐騎", name = "坐騎", specID = -10, uid = uid()}
-  memory[6][4] = {itemID = nil, text = "只顯示武器庫與塑形套裝", name = "武器庫與塑形套裝", specID = -9, uid = uid()}
+  memory[6][1] = {itemID = nil,text = "Filter everything else",name = "Other",specID = -14,uid = uid()}
+  memory[6][2] = {itemID = nil,text = "Filter only toys",name = "Toys",specID = -11,uid = uid()}
+  memory[6][3] = {itemID = nil,text = "Filter only mounts",name = "Mounts",specID = -10,uid = uid()}
+  memory[6][4] = {itemID = nil,text = "Filter only arsenals and ensembles",name = "Arsenals & Ensembles",specID = -9,uid = uid()}
 end
 
-local state = {[false] = "已停用",[true] = "已啟用",[1] = "戰隊",[2] = playerClass.name}
+local state = {[false] = "Disabled",[true] = "Enabled",[1] = "Warband",[2] = playerClass.name}
 
 local bigFrame = CreateFrame("Frame",nil,UIParent)
 bigFrame:SetSize(516+24,336+34)
@@ -1043,8 +1043,8 @@ itemIcon:Hide()
 iconButton:SetScript("OnEnter",function()
   if not canDrag then
     GameTooltip:SetOwner(iconButton,"ANCHOR_BOTTOMLEFT",34+3.4,0)
-    GameTooltip:AddLine("|cffffffff混搭收藏單")
-    GameTooltip:AddLine("|cff1eff00<點左鍵打開>")
+    GameTooltip:AddLine("|cffffffffTrove Tally")
+    GameTooltip:AddLine("|cff1eff00<Left Click to toggle>")
     GameTooltip:Show()
   end
 end)
@@ -1144,7 +1144,7 @@ headerInfo.text:SetHeight(32)
 headerInfo.text:SetPoint("TOPRIGHT",-2-28-2-8-7.875-8,0)
 headerInfo.text:SetJustifyH("RIGHT")
 headerInfo.text:SetJustifyV("MIDDLE")
-headerInfo.text:SetText("點右鍵返回")
+headerInfo.text:SetText("Right click to go back")
 headerInfo.texture = headerInfo:CreateTexture(nil,"OVERLAY")
 headerInfo.texture:SetTexture("Interface\\AddOns\\TroveTally\\Assets\\i")
 headerInfo.texture:SetTexCoord(0,0.5625,0,1)
@@ -1483,7 +1483,7 @@ local function updateNote(arg,new1,new2)
   end
 end
 
-local default = "Hi! 你是否需要 $? 如果不要的話，可不可以給我?"
+local default = "Hi! Do you need $? If not, could I have it please?"
 local function openEdit(arg)
   for _,u in ipairs(userFrames) do
     if arg.uid == u.uid then
@@ -1935,8 +1935,8 @@ local function lootUpdate()
 end
 
 local needToLoad = {}
-for i = 1, C_AddOns.GetNumAddOns() do
-  local loaded,finished = C_AddOns.IsAddOnLoaded(i)
+for i = 1,GetNumAddOns() do
+  local loaded,finished = IsAddOnLoaded(i)
   if loaded and not finished then
     needToLoad[GetAddOnInfo(i)] = true
   end
@@ -1992,8 +1992,8 @@ local function addNotification(arg1,arg2,m,id)
     owned = C_TransmogCollection.PlayerHasTransmog(id)
   end
   if canLearn[settings.trade == 1 and 14 or playerClass.index][sub] ~= nil and not owned and (color == "ff0070dd" or color == "ffa335ee") then
-    local whisper = "|cffFF80FF|Haddon:TroveTally:"..addLink(link)..":"..arg2.."|h[密語詢問是否願意交易?]|h|r"
-    local message = "|cffFFC000Trove Tally: |cffFFFFFF"..(arg2:match("(.-)%-") or arg2).." 收集了未知的外觀 "..link..". "..whisper
+    local whisper = "|cffFF80FF|Haddon:TroveTally:"..addLink(link)..":"..arg2.."|h[Whisper if they can trade it?]|h|r"
+    local message = "|cffFFC000Trove Tally: |cffFFFFFF"..(arg2:match("(.-)%-") or arg2).." has collected unknown transmog "..link..". "..whisper
     if settings.instant then print(message)
     else
       if lootTimer == nil then
@@ -2029,14 +2029,14 @@ main:SetScript("OnEvent",function(self,event,arg1,arg2,arg3,...)
       if settings.hideUnobt == nil then settings.hideUnobt = false end
       if settings.unlisted == nil then settings.unlisted = false end
       if settings.hideIcon then iconButton:Hide() end
-      memory[4][1] = {itemID = nil, text = (settings.custom == false) and "已停用" or settings.custom, name = "自訂訊息", specID = -13, uid = uid()}
-	memory[4][2] = {itemID = nil, text = state[settings.instant], name = "即時通知", specID = -12, uid = uid()}
-	memory[4][3] = {itemID = nil, text = state[settings.unlisted], name = "通知未列出物品", specID = -17, uid = uid()}
-	memory[4][4] = {itemID = nil, text = state[settings.trade], name = "可交易掉落物通知", specID = -8, uid = uid()}
-	memory[4][5] = {itemID = nil, text = state[settings.hideIcon], name = "隱藏小地圖按鈕", specID = -5, uid = uid()}
-	memory[4][6] = {itemID = nil, text = state[settings.hideMerchant], name = "隱藏商人處收集的物品", specID = -7, uid = uid()}
-	memory[4][7] = {itemID = nil, text = state[settings.hideUnobt], name = "隱藏無法獲得的物品", specID = -16, uid = uid()}
-	memory[4][8] = {itemID = nil, text = state[settings.hideOwned], name = "隱藏已收集的物品", specID = -4, uid = uid()}
+      memory[4][1] = {itemID = nil,text = (settings.custom == false) and "Disabled" or settings.custom,name = "Custom message",specID = -13,uid = uid()}
+      memory[4][2] = {itemID = nil,text = state[settings.instant],name = "Instant notifications",specID = -12,uid = uid()}
+      memory[4][3] = {itemID = nil,text = state[settings.unlisted],name = "Notify unlisted items",specID = -17,uid = uid()}
+      memory[4][4] = {itemID = nil,text = state[settings.trade],name = "Tradeable loot notifications",specID = -8,uid = uid()}
+      memory[4][5] = {itemID = nil,text = state[settings.hideIcon],name = "Hide minimap button",specID = -5,uid = uid()}
+      memory[4][6] = {itemID = nil,text = state[settings.hideMerchant],name = "Hide collected at merchant",specID = -7,uid = uid()}
+      memory[4][7] = {itemID = nil,text = state[settings.hideUnobt],name = "Hide unobtainable",specID = -16,uid = uid()}
+      memory[4][8] = {itemID = nil,text = state[settings.hideOwned],name = "Hide collected",specID = -4,uid = uid()}
       setIconPos(iconDegrees)
     end
     needToLoad[arg1] = nil
