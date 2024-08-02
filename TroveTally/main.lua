@@ -21,7 +21,8 @@ local ci = {
   3586022,133786,133788,
   134388,1693994,463562,
   876371,3386337,1686583,
-  1064188,4559256,3015740
+  1064188,4559256,3015740,
+  458224
 }
 local scroll = 0
 --215745,"Kun-Lai Summit, Isle of Giants, Isle of Thunder, Timeless Isle"
@@ -949,7 +950,7 @@ local lists = {
 
 local function populateSpec()
   memory[2][1] = {itemID = nil,text = "Open the settings options",name = "Settings",specID = -3,uid = uid()}
-  memory[2][2] = {itemID = nil,text = "Filter only Radiant Echoes items",name = "Radiant Echoes",specID = -18,uid = uid()}
+  memory[2][2] = {itemID = nil,text = {"Filter only Radiant Echoes items","rad",ci[40]},name = "Radiant Echoes",specID = -18,uid = uid()}
   memory[2][3] = {itemID = nil,text = "Filter only Dragonflight toys",name = "Dragonflight Toys",specID = -15,uid = uid()}
   memory[2][4] = {itemID = nil,text = "Open the Infinite Bazaar",name = "Infinite Bazaar",specID = -6,uid = uid()}
   memory[2][5] = {itemID = nil,text = "Don't filter anything",name = "Everything",specID = -2,uid = uid()}
@@ -964,6 +965,26 @@ local function populateSpec()
   memory[6][2] = {itemID = nil,text = "Filter only toys",name = "Toys",specID = -11,uid = uid()}
   memory[6][3] = {itemID = nil,text = "Filter only mounts",name = "Mounts",specID = -10,uid = uid()}
   memory[6][4] = {itemID = nil,text = "Filter only arsenals and ensembles",name = "Arsenals & Ensembles",specID = -9,uid = uid()}
+end
+
+local region = GetCurrentRegion()
+local regionTime = {
+  1722279640, --US
+  1722470440, --KR
+  1722288640, --EU
+  1722486600, --TW
+  1722486600 --CN
+}
+
+local function getTime()
+  local time = date("*t",GetServerTime() - regionTime[region])
+  local sec = time.hour * 3600 + time.min * 60 + time.sec
+  local secLeft = math.ceil(sec / 5400) * 5400 - sec
+  local hourNum = math.floor(secLeft / 3600)
+  secLeft = secLeft % 3600
+  local minNum = math.floor(secLeft / 60)
+  local secNum = secLeft % 60
+  return (hourNum > 0 and hourNum..":" or "")..string.format("%02d:%02d",minNum,secNum)
 end
 
 local state = {[false] = "Disabled",[true] = "Enabled",[1] = "Warband",[2] = playerClass.name}
@@ -984,6 +1005,7 @@ exFrame:SetBackdrop({
 exFrame:SetBackdropColor(0,0,0)
 exFrame:SetClipsChildren(true)
 exFrame:Hide()
+exFrame:SetScript("OnHide",function(self) self:SetScript("OnUpdate",nil) end) --IF
 
 local exIcons = {}
 local function createExIcon(i)
@@ -1323,6 +1345,8 @@ mainFrame:SetScript("OnMouseDown",function(_,button)
   if button == "RightButton" then goBack() end
 end)
 
+local flags = {item = {},spell = {}}
+
 local function classLoot(specs)
   for i = 1,GetNumSpecializations() do
     local specID = GetSpecializationInfo(i)
@@ -1365,11 +1389,8 @@ end
 
 local function checkShopID(id)
   if id == nil or id == 226127 then return false end
-  for _,m in ipairs(memory[5]) do if id == m.itemID then return m.owned end end
-  for _,m in ipairs(memory[7]) do if id == m.itemID then return m.owned end end
-  for _,m in ipairs(memory[8]) do if id == m.itemID then return m.owned end end
-  for _,m in ipairs(memory[9]) do if id == m.itemID then return m.owned end end
-  return false
+  local m = flags.item[id]
+  return m and m.owned or false
 end
 
 local function updateMerchantBtn(btn,i)
@@ -1627,8 +1648,13 @@ userFrame.onEnter = function()
     for i = 2,7,2 do
       local amount = userFrame.cost[i]
       if amount ~= nil then
+        local text = exIcons[i / 2].text
+        if amount == "rad" then
+          amount = getTime()
+          exFrame:SetScript("OnUpdate",function() text:SetText(getTime()) end)
+        end
         exIcons[i / 2].bg:SetTexture(userFrame.cost[i + 1])
-        exIcons[i / 2].text:SetText(amount)
+        text:SetText(amount)
         exIcons[i / 2].icon:Show()
       else exIcons[i / 2].icon:Hide() end
     end
@@ -1832,6 +1858,7 @@ local function addToList(page,id,text,t,un,s,n,q,specs,spell,link)
   else owned = setOwned() end
   table.insert(memory[page],{
     itemID = id,
+    spellID = spell,
     text = text,
     name = hex.."["..n.."]",
     itemSpecs = specs,
@@ -1842,7 +1869,8 @@ local function addToList(page,id,text,t,un,s,n,q,specs,spell,link)
     s = s,
     uid = uid()
   })
-  if spell ~= nil then memory[page][#memory[page]].spellID = spell end
+  flags.item[id] = memory[page][#memory[page]]
+  if spell then flags.spell[spell] = flags.item[id] end
 end
 
 local lang = 1
@@ -1886,28 +1914,24 @@ local function removeAt(j)
   end
 end
 
-local function checkID(id,arrayI,idType)
-  for i,m in ipairs(memory[arrayI]) do
-    if id == m[idType] then
-      m.owned = true
-      if mI == 3 then
-        for j,child in ipairs(memory[3]) do
-          if child.uid == m.uid then
-            if settings.hideOwned then removeAt(j)
-            else child.owned = m.owned; updateNote(child,nil,true) end
-            titleH[2] = titleH[2] + 1
-            local title = string.format("%s (%d/%d)",titleH[1],titleH[2],titleH[3])
-            mainFrameHeaderTitle:SetText(title)
-            break
-          end
+local function checkID(m)
+  if m then
+    m.owned = true
+    if mI == 3 then
+      for j,child in ipairs(memory[3]) do
+        if child.uid == m.uid then
+          if settings.hideOwned then removeAt(j)
+          else child.owned = m.owned; updateNote(child,nil,true) end
+          titleH[2] = titleH[2] + 1
+          local title = string.format("%s (%d/%d)",titleH[1],titleH[2],titleH[3])
+          mainFrameHeaderTitle:SetText(title)
+          break
         end
       end
-      print("|cffFFC000Trove Tally: |cffFFFFFFYou've collected "..m.itemLink)
-      PlaySoundFile("Interface\\AddOns\\TroveTally\\Assets\\done.ogg","Master")
-      return true
     end
+    print("|cffFFC000Trove Tally: |cffFFFFFFYou've collected "..m.itemLink)
+    PlaySoundFile("Interface\\AddOns\\TroveTally\\Assets\\done.ogg","Master")
   end
-  return false
 end
 
 local links = {}
@@ -2046,31 +2070,21 @@ main:SetScript("OnEvent",function(self,event,arg1,arg2,arg3,...)
     if #needToLoad == 0 then startLoading() end
   elseif event == "TRANSMOG_COLLECTION_SOURCE_ADDED" then
     local sourceInfo = C_TransmogCollection.GetSourceInfo(arg1)
-    if sourceInfo then
-      --print(sourceInfo.itemID)
-      if checkID(sourceInfo.itemID,1,"itemID") then return end
-      if checkID(sourceInfo.itemID,9,"itemID") then return end
-      if checkID(sourceInfo.itemID,11,"itemID") then return end
-    end
+    if sourceInfo then checkID(flags.item[sourceInfo.itemID]) end
   --elseif event == "GET_ITEM_INFO_RECEIVED" then gotdata(arg1)
-  elseif event == "UNIT_SPELLCAST_SUCCEEDED" and arg1 == "player" then checkID(arg3,5,"spellID")
-  elseif event == "NEW_MOUNT_ADDED" then
-    if checkID(arg1,7,"spellID") then return end
-    if checkID(arg1,11,"spellID") then return end
-  elseif event == "NEW_TOY_ADDED" then
-    if checkID(arg1,8,"itemID") then return end
-    if checkID(arg1,10,"itemID") then return end
-  elseif event == "HEIRLOOMS_UPDATED" and arg2 == "NEW" then checkID(arg1,11,"itemID")
+  elseif event == "UNIT_SPELLCAST_SUCCEEDED" and arg1 == "player" then checkID(flags.spell[arg3])
+  elseif event == "NEW_MOUNT_ADDED" then checkID(flags.spell[arg1])
+  elseif event == "NEW_TOY_ADDED" then checkID(flags.item[arg1])
+  elseif event == "HEIRLOOMS_UPDATED" and arg2 == "NEW" then checkID(flags.item[arg1])
   elseif event == "NEW_PET_ADDED" then
     local speciesID = C_PetJournal.GetPetInfoByPetID(arg1)
-    if C_PetJournal.GetNumCollectedInfo(speciesID) == 1 then checkID(speciesID,11,"spellID") end
+    if C_PetJournal.GetNumCollectedInfo(speciesID) == 1 then checkID(flags.spell[speciesID]) end
   elseif event == "CHAT_MSG_LOOT" then
     if settings.trade and select(9,...) ~= myGUID then
-      for _,i in ipairs({1,11}) do for _,m in ipairs(memory[i]) do
-        if string.find(arg1,"item:"..m.itemID..":") then addNotification(arg1,arg2,m); return end
-      end end
-      if not settings.unlisted then if lootTimer ~= nil then lootTimer = GetServerTime() + 5 end return end
       local id = tonumber(arg1:match("item:(%d+):"))
+      local m = flags.item[id]
+      if m and m.s then addNotification(arg1,arg2,m); return end
+      if not settings.unlisted then if lootTimer ~= nil then lootTimer = GetServerTime() + 5 end return end
       local item = Item:CreateFromItemID(id)
       item:ContinueOnItemLoad(function() addNotification(arg1,arg2,nil,id) end)
     end
