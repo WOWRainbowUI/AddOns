@@ -112,7 +112,7 @@ function contextMenu:CreateContextMenu(bag)
 		text = addonName..' Dev Mode',
 		--@end-debug@]==]
 		--@non-debug@
-		text = addonName..' v0.1.84',
+		text = addonName..' v0.1.87',
 		--@end-non-debug@
     isTitle = true,
     notCheckable = true
@@ -202,6 +202,16 @@ function contextMenu:CreateContextMenu(bag)
       func = function()
         PlaySound(SOUNDKIT.IG_BACKPACK_CLOSE)
         DepositReagentBank()
+      end
+    })
+    table.insert(menuList, {
+      text = L:G("Clean Up Warbank"),
+      notCheckable = true,
+      tooltipTitle = L:G("Clean Up Warbank"),
+      tooltipText = L:G("Click to clean up your Warbanks and resort items into correct tabs."),
+      func = function()
+        PlaySound(SOUNDKIT.IG_BACKPACK_CLOSE)
+        C_Container.SortAccountBankBags()
       end
     })
   end
