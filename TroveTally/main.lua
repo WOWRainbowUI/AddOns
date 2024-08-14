@@ -68,7 +68,8 @@ local src = {
   HEMET = "Hemet Nesingwary XVII",
   HOROS = "Horos",
   ERUS = "Erus",
-  AMUUL = "Remembrancer Amuul"
+  AMUUL = "Remembrancer Amuul",
+  BONUS = "Bonus Objectives (Level < 70)"
 }
 local function srcs(...) return table.concat({...},", ") end
 local data = {
@@ -869,6 +870,104 @@ local data7 = {
   217985,{src.AMUUL,"20,000",ci[39]},
   219325,"Lifeless Stone Ring"
 }
+local data8 = {
+  218330,src.BONUS,
+  218318,src.BONUS,
+  218324,src.BONUS,
+  218312,src.BONUS,
+  218313,src.BONUS,
+  218325,src.BONUS,
+  218329,src.BONUS,
+  218317,src.BONUS,
+  218327,src.BONUS,
+  218315,src.BONUS,
+  218332,src.BONUS,
+  218320,src.BONUS,
+  218334,src.BONUS,
+  218322,src.BONUS,
+  218328,src.BONUS,
+  218316,src.BONUS,
+  218331,src.BONUS,
+  218319,src.BONUS,
+  218333,src.BONUS,
+  218321,src.BONUS,
+  218335,src.BONUS,
+  218323,src.BONUS,
+  218326,src.BONUS,
+  218314,src.BONUS,
+  218035,src.BONUS,
+  218026,src.BONUS,
+  218260,src.BONUS,
+  218251,src.BONUS,
+  218281,src.BONUS,
+  218272,src.BONUS,
+  218299,src.BONUS,
+  218290,src.BONUS,
+  217991,src.BONUS,
+  218024,src.BONUS,
+  218263,src.BONUS,
+  218254,src.BONUS,
+  218284,src.BONUS,
+  218275,src.BONUS,
+  218302,src.BONUS,
+  218293,src.BONUS,
+  218039,src.BONUS,
+  218030,src.BONUS,
+  218265,src.BONUS,
+  218256,src.BONUS,
+  218286,src.BONUS,
+  218277,src.BONUS,
+  218304,src.BONUS,
+  218295,src.BONUS,
+  218036,src.BONUS,
+  218027,src.BONUS,
+  218261,src.BONUS,
+  218252,src.BONUS,
+  218282,src.BONUS,
+  218273,src.BONUS,
+  218300,src.BONUS,
+  218291,src.BONUS,
+  218040,src.BONUS,
+  218031,src.BONUS,
+  218266,src.BONUS,
+  218257,src.BONUS,
+  218287,src.BONUS,
+  218278,src.BONUS,
+  218305,src.BONUS,
+  218296,src.BONUS,
+  218034,src.BONUS,
+  218025,src.BONUS,
+  218259,src.BONUS,
+  218250,src.BONUS,
+  218280,src.BONUS,
+  218271,src.BONUS,
+  218298,src.BONUS,
+  218289,src.BONUS,
+  218306,src.BONUS,
+  218297,src.BONUS,
+  218267,src.BONUS,
+  218258,src.BONUS,
+  218288,src.BONUS,
+  218279,src.BONUS,
+  218041,src.BONUS,
+  218032,src.BONUS,
+  218038,src.BONUS,
+  218029,src.BONUS,
+  218264,src.BONUS,
+  218255,src.BONUS,
+  218285,src.BONUS,
+  218276,src.BONUS,
+  218303,src.BONUS,
+  218294,src.BONUS,
+  218037,src.BONUS,
+  218028,src.BONUS,
+  218262,src.BONUS,
+  218253,src.BONUS,
+  218283,src.BONUS,
+  218274,src.BONUS,
+  218301,src.BONUS,
+  218292,src.BONUS
+}
 
 local canLearn = {
   {[1]=1,[2]=1,[3]=1,[4]=1,[5]=1,[6]=1,[7]=1,[8]=1,[9]=1,[11]=1,[12]=1,[13]=1,[14]=1,[16]=1,[20]=1,[21]=1}, --WARRIOR
@@ -884,7 +983,7 @@ local canLearn = {
   {[5]=1,[6]=1,[7]=1,[11]=1,[12]=1,[13]=1,[16]=1,[18]=1}, --DRUID
   {[1]=1,[8]=1,[10]=1,[12]=1,[16]=1,[18]=1}, --DEMONHUNTER
   {[1]=1,[2]=1,[5]=1,[6]=1,[8]=1,[9]=1,[11]=1,[12]=1,[13]=1,[16]=1,[19]=1}, --EVOKER
-  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}--WARBAND
+  {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1} --WARBAND
 }
 
 local iconButton = CreateFrame("Button","LibDBIcon10_TroveTally",Minimap)
@@ -927,10 +1026,10 @@ local function uid()
 end
 local dataI = 1
 local mI = 2
-local orig = {mop = 1,ens = 5,inf = 6,mou = 7,toy = 8,oth = 9,dto = 10,rad = 11}
-local keys = {"mop","ens","inf","mou","toy","oth","dto","rad"}
+local orig = {mop = 1,ens = 5,inf = 6,mou = 7,toy = 8,oth = 9,dto = 10,rad = 11,rew = 12,rec = 13}
+local keys = {"mop","ens","inf","mou","toy","oth","dto","rad","rew","rec"}
 local origI = 1
-local memory = {{},{},{},{},{},{},{},{},{},{},{}}
+local memory = {{},{},{},{},{},{},{},{},{},{},{},{},{}}
 local playerClass = {}
 playerClass.name,_,playerClass.index = UnitClass("player")
 local playerSpecs = {}
@@ -945,41 +1044,24 @@ local lists = {
   [8] = " |cffFFC000| |rToys",
   [9] = " |cffFFC000| |rOther",
   [10] = " |cffFFC000| |rDragonflight Toys",
-  [11] = " |cffFFC000| |rRadiant Echoes"
+  [11] = " |cffFFC000| |rRadiant Echoes",
+  [12] = " |cffFFC000| |rRewards",
+  [13] = " |cffFFC000| |rRecruit's Gear"
 }
-
-local function populateSpec()
-  memory[2][1] = {itemID = nil,text = "Open the settings options",name = "Settings",specID = -3,uid = uid()}
-  memory[2][2] = {itemID = nil,text = {"Filter only Radiant Echoes items","rad",ci[40]},name = "Radiant Echoes",specID = -18,uid = uid()}
-  memory[2][3] = {itemID = nil,text = "Filter only Dragonflight toys",name = "Dragonflight Toys",specID = -15,uid = uid()}
-  memory[2][4] = {itemID = nil,text = "Open the Infinite Bazaar",name = "Infinite Bazaar",specID = -6,uid = uid()}
-  memory[2][5] = {itemID = nil,text = "Don't filter anything",name = "Everything",specID = -2,uid = uid()}
-  for i = GetNumSpecializations(),1,-1 do
-    local specID, specName = GetSpecializationInfo(i)
-    table.insert(playerSpecs,specID)
-    table.insert(memory[2],{itemID = nil,text = "Filter only items that can be looted with "..specName.." specialization",name = specName,specID = specID,uid = uid()})
-  end
-  table.insert(memory[2],{itemID = nil,text = "Filter only items that can be looted by "..playerClass.name,name = playerClass.name,specID = -1,uid = uid()})
-
-  memory[6][1] = {itemID = nil,text = "Filter everything else",name = "Other",specID = -14,uid = uid()}
-  memory[6][2] = {itemID = nil,text = "Filter only toys",name = "Toys",specID = -11,uid = uid()}
-  memory[6][3] = {itemID = nil,text = "Filter only mounts",name = "Mounts",specID = -10,uid = uid()}
-  memory[6][4] = {itemID = nil,text = "Filter only arsenals and ensembles",name = "Arsenals & Ensembles",specID = -9,uid = uid()}
-end
 
 local region = GetCurrentRegion()
 local regionTime = {
   1722279640, --US
   1722470440, --KR
-  1722288640, --EU
-  1722486600, --TW
-  1722486600 --CN
+  1722290440, --EU
+  1722488440, --TW
+  1722488440 --CN
 }
 
 local function getTime()
   local time = date("*t",GetServerTime() - regionTime[region])
   local sec = time.hour * 3600 + time.min * 60 + time.sec
-  local secLeft = math.ceil(sec / 5400) * 5400 - sec
+  local secLeft = math.ceil(sec / 3600) * 3600 - sec
   local hourNum = math.floor(secLeft / 3600)
   secLeft = secLeft % 3600
   local minNum = math.floor(secLeft / 60)
@@ -990,7 +1072,7 @@ end
 local state = {[false] = "Disabled",[true] = "Enabled",[1] = "Warband",[2] = playerClass.name}
 
 local bigFrame = CreateFrame("Frame",nil,UIParent)
-bigFrame:SetSize(516+24,336+34)
+bigFrame:SetSize(516+24,336+34+26)
 bigFrame:SetPoint("CENTER",0,0)
 bigFrame:SetFrameStrata("DIALOG")
 bigFrame:SetMovable(true)
@@ -1091,32 +1173,25 @@ iconButton:SetScript("OnDragStart",function()
 end)
 iconButton:SetScript("OnDragStop",function() canDrag = false end)
 
-local mainFrame = CreateFrame("Frame",nil,bigFrame,"BackdropTemplate")
-mainFrame:SetSize(516+24,336)
-mainFrame:SetBackdrop({
-  bgFile = "Interface\\Buttons\\WHITE8x8"
-})
-mainFrame:SetBackdropColor(0,0,0)
-mainFrame:SetPoint("TOPLEFT",0,-34)
-mainFrame:SetClipsChildren(true)
+local function createRect(parent,w,h,color,x,y,c)
+  local f = CreateFrame("Frame",nil,parent,"BackdropTemplate")
+  f:SetSize(w,h)
+  f:SetBackdrop({bgFile = "Interface\\Buttons\\WHITE8x8"})
+  f:SetBackdropColor(unpack(color))
+  f:SetPoint("TOPLEFT",x,y)
+  if c then f:SetClipsChildren(true) end
+  return f
+end
 
-local mainFrameHeader = CreateFrame("Frame",nil,bigFrame,"BackdropTemplate")
-mainFrameHeader:SetSize(516+24,34)
-mainFrameHeader:SetBackdrop({
-  bgFile = "Interface\\Buttons\\WHITE8x8"
-})
-mainFrameHeader:SetBackdropColor(0,0,0)
-mainFrameHeader:SetPoint("TOPLEFT",0,0)
+local header = createRect(bigFrame,540,34,{0,0,0},0,0,true)
+header:SetFrameLevel(20)
+local headerLine = createRect(header,540,2,{1,0.7529,0},0,-32)
+local mainFrame = createRect(bigFrame,540,336,{0,0,0},0,-34,true)
+local footer = createRect(bigFrame,540,26,{0,0,0},0,-370,true)
+footer:SetFrameLevel(20)
+local footerLine = createRect(footer,540,2,{1,0.7529,0},0,0)
 
-local mainFrameHeaderLine = CreateFrame("Frame",nil,mainFrameHeader,"BackdropTemplate")
-mainFrameHeaderLine:SetSize(516+24,2)
-mainFrameHeaderLine:SetBackdrop({
-  bgFile = "Interface\\Buttons\\WHITE8x8"
-})
-mainFrameHeaderLine:SetBackdropColor(1,0.7529,0)
-mainFrameHeaderLine:SetPoint("TOPLEFT",0,-34+2)
-
-local mainFrameHeaderTitle = mainFrameHeader:CreateFontString(nil,"OVERLAY","GameFontHighlightMedium")
+local mainFrameHeaderTitle = header:CreateFontString(nil,"OVERLAY","GameFontHighlightMedium")
 mainFrameHeaderTitle:SetHeight(32)
 mainFrameHeaderTitle:SetPoint("TOPLEFT",6,0)
 mainFrameHeaderTitle:SetJustifyH("LEFT")
@@ -1125,7 +1200,7 @@ mainFrameHeaderTitle:SetText("Trove Tally")
 
 local mainFrameEdit = CreateFrame("EditBox",nil,mainFrame)
 mainFrameEdit:SetSize(240,24)
-mainFrameEdit:SetFrameLevel(10)
+mainFrameEdit:SetFrameLevel(11)
 mainFrameEdit:SetHighlightColor(0,0,0,0)
 mainFrameEdit:SetFontObject(GameFontHighlight)
 mainFrameEdit.block = CreateFrame("Frame",nil,mainFrameEdit)
@@ -1159,7 +1234,7 @@ mainFrameEdit.block:SetScript("OnMouseDown",function(self,button)
 end)
 
 local canInfo = true
-local headerInfo = CreateFrame("Frame",nil,mainFrameHeader)
+local headerInfo = CreateFrame("Frame",nil,header)
 headerInfo:SetAllPoints()
 headerInfo.text = headerInfo:CreateFontString(nil,"OVERLAY","GameFontHighlight")
 headerInfo.text:SetHeight(32)
@@ -1183,7 +1258,7 @@ headerInfo.animAlpha:SetSmoothing("IN_OUT")
 headerInfo.anim:SetScript("OnFinished",function() headerInfo:Hide() end)
 headerInfo:Hide()
 
-local mainFrameExit = CreateFrame("Button",nil,mainFrameHeader)
+local mainFrameExit = CreateFrame("Button",nil,header)
 mainFrameExit:SetSize(28,28)
 mainFrameExit:SetPoint("TOPLEFT",516-28-2+24,-2)
 local mainFrameExitTexture = mainFrameExit:CreateTexture(nil,"OVERLAY")
@@ -1328,9 +1403,13 @@ local function clean(index,ignore,alt,total,collected)
   end
 end
 
+local selGroup
 local function goBack()
   if #history > 0 then
-    if mainFrameEdit:IsVisible() then mainFrameEdit:Hide() end
+    if mainFrameEdit:IsVisible() then
+      userFrames[9].userNote:SetText("Disabled")
+      mainFrameEdit:Hide()
+    end
     if GameTooltip:IsVisible() then
       itemIcon:Hide()
       GameTooltip:Hide()
@@ -1338,6 +1417,7 @@ local function goBack()
     if exFrame:IsVisible() then exFrame:Hide() end
     clean(history[#history],true)
     history[#history] = nil
+    selGroup = nil
   end
 end
 
@@ -1345,7 +1425,12 @@ mainFrame:SetScript("OnMouseDown",function(_,button)
   if button == "RightButton" then goBack() end
 end)
 
-local flags = {item = {},spell = {}}
+local flags = {item = {},mount = {},spell = {},pet = {}}
+local flagType = {
+  [1] = flags.mount,
+  [2] = flags.spell,
+  [5] = flags.pet
+}
 
 local function classLoot(specs)
   for i = 1,GetNumSpecializations() do
@@ -1355,7 +1440,7 @@ local function classLoot(specs)
   return false
 end
 
-local function filter(filterID,key)
+local function filter(filterID,key,ignore)
   memory[3] = {}
   local total,collected = 0,0
   for _,sel in ipairs(memory[key]) do
@@ -1367,13 +1452,14 @@ local function filter(filterID,key)
     --
     if canLoot then
       total = total + 1
-      if sel.owned then collected = collected + 1 end
-      if not (settings.hideOwned and sel.owned or settings.hideUnobt and sel.un) then
+      if sel.owned or settings.hideKnown and sel.known then collected = collected + 1 end
+      if not (settings.hideOwned and (sel.owned or settings.hideKnown and sel.known) or settings.hideUnobt and sel.un) then
         table.insert(memory[3],{
           itemID = sel.itemID,
           text = sel.text,
           name = sel.name,
           owned = sel.owned,
+          known = sel.known,
           spellID = sel.spellID,
           itemLink = sel.itemLink,
           t = sel.t,
@@ -1384,7 +1470,55 @@ local function filter(filterID,key)
       end
     end
   end
-  clean(3,nil,key,total,collected)
+  clean(3,ignore,key,total,collected)
+end
+
+local selSpecID = -2
+local selBtn
+local function createBtn(str,specID,offset,sel)
+  local text = footer:CreateFontString(nil,"OVERLAY","GameFontHighlight")
+  text:SetText(str)
+  local w = text:GetWidth() + 12
+  local btn = createRect(footer,w,24,{0,0,0},offset or 0,-2)
+  text:SetParent(btn); text:SetAllPoints()
+  if sel then text:SetTextColor(1,0.7529,0); selBtn = text end
+  btn:SetScript("OnEnter",function(self)
+    self:SetBackdropColor(0.125,0.125,0.125)
+    text:SetTextColor(1,0.7529,0)
+  end)
+  btn:SetScript("OnLeave",function(self)
+    self:SetBackdropColor(0,0,0)
+    if selSpecID ~= specID then text:SetTextColor(1,1,1) end
+  end)
+  btn:SetScript("OnMouseDown",function(self)
+    if selBtn ~= text then
+      selBtn:SetTextColor(1,1,1); selBtn = text
+      selSpecID = specID
+      if selGroup then filter(selSpecID,selGroup,true) end
+    end
+  end)
+  return w
+end
+
+local function populateSpec()
+  memory[2][1] = {itemID = nil,text = "Open the settings options",name = "Settings",specID = -3,uid = uid()}
+  memory[2][2] = {itemID = nil,text = {"Open the Radiant Echoes group","rad",ci[40]},name = "Radiant Echoes",specID = -18,uid = uid()}
+  memory[2][3] = {itemID = nil,text = "Filter only Dragonflight toys",name = "Dragonflight Toys",specID = -15,uid = uid()}
+  memory[2][4] = {itemID = nil,text = "Open the Infinite Bazaar group",name = "Infinite Bazaar",specID = -6,uid = uid()}
+  memory[2][5] = {itemID = nil,text = "Filter only Remix: MoP items",name = "Remix: MoP",specID = -19,uid = uid()}
+  local w = createBtn(playerClass.name,-1)
+  for i = 1,GetNumSpecializations() do
+    local specID, specName = GetSpecializationInfo(i)
+    table.insert(playerSpecs,specID)
+    w = w + createBtn(specName,specID,w)
+  end
+  w = w + createBtn("Everything",-2,w,true)
+  memory[6][1] = {itemID = nil,text = "Filter everything else",name = "Other",specID = -14,uid = uid()}
+  memory[6][2] = {itemID = nil,text = "Filter only toys",name = "Toys",specID = -11,uid = uid()}
+  memory[6][3] = {itemID = nil,text = "Filter only mounts",name = "Mounts",specID = -10,uid = uid()}
+  memory[6][4] = {itemID = nil,text = "Filter only arsenals and ensembles",name = "Arsenals & Ensembles",specID = -9,uid = uid()}
+  memory[11][1] = {itemID = nil,text = "Filter only recruit's gear",name = "Recruit's Gear",specID = -21,uid = uid()}
+  memory[11][2] = {itemID = nil,text = "Filter only rewards",name = "Rewards",specID = -20,uid = uid()}
 end
 
 local function checkShopID(id)
@@ -1504,7 +1638,7 @@ local function updateNote(arg,new1,new2)
   end
 end
 
-local default = "Hi! Do you need $? If not, could I have it please?"
+local default = "Hi! Do you need $ you've just looted? If not, could I have it please?"
 local function openEdit(arg)
   for _,u in ipairs(userFrames) do
     if arg.uid == u.uid then
@@ -1529,7 +1663,7 @@ end
 
 local actions = {
   [-3] = function() clean(4) end, --SETTINGS
-  [-4] = function() switch("hideOwned",8) end,
+  [-4] = function() switch("hideOwned",9) end,
   [-5] = function()
     switch("hideIcon",5)
     if settings.hideIcon then iconButton:Hide() else iconButton:Show() end
@@ -1568,16 +1702,16 @@ local actions = {
   [-15] = function() filter(-1,orig["dto"]) end,
   [-16] = function() switch("hideUnobt",7) end,
   [-17] = function() switch("unlisted",3) end,
-  [-18] = function() filter(-1,orig["rad"]) end
+  [-18] = function() clean(orig["rad"]) end,
+  [-19] = function() filter(selSpecID,orig["mop"]); selGroup = 1 end,
+  [-20] = function() filter(-1,orig["rew"]) end,
+  [-21] = function() filter(selSpecID,orig["rec"]); selGroup = 13 end,
+  [-22] = function() switch("hideKnown",8) end
 }
 
 local function userFrameOnClick(button,parent)
   if button == "LeftButton" then
-    if parent.itemID == nil then
-      if parent.specID <= -3 then actions[parent.specID]()
-      else
-        filter(parent.specID,orig["mop"]) --REMIX: MOP
-      end
+    if parent.itemID == nil then actions[parent.specID]()
     else
       if ACTIVE_CHAT_EDIT_BOX ~= nil and IsShiftKeyDown() then ChatEdit_InsertLink(parent.itemLink)
       elseif IsControlKeyDown() then
@@ -1639,7 +1773,7 @@ userFrame.onEnter = function()
   if userFrame.itemID ~= nil then
     itemIcon.texture:SetTexture(GetItemIcon(userFrame.itemID))
     itemIcon:Show()
-    GameTooltip:SetOwner(bigFrame,"ANCHOR_BOTTOMLEFT",-4,336+34-60-4)
+    GameTooltip:SetOwner(bigFrame,"ANCHOR_BOTTOMLEFT",-4,336+34-60-4+26)
     GameTooltip:SetHyperlink("item:"..userFrame.itemID)
     GameTooltip:Show()
   end
@@ -1671,11 +1805,11 @@ userFrame.update = function(shift)
 
     local moodColor = colors.none
     local moodIcon = {0,0.5,0,0.5}
-    if memoryItem.owned then moodColor = colors.green end
+    if memoryItem.owned or settings.hideKnown and memoryItem.known then moodColor = colors.green end
     if type(memoryItem.text) ~= "table" then
       userFrame.cost = nil
       userFrame.text = memoryItem.text
-      if userFrame.uid == 9 then
+      if userFrame.uid == 10 then
         moodColor = colors.white
         moodIcon = {0,0.5,0.5,1}
       end
@@ -1714,7 +1848,7 @@ userFrame.update = function(shift)
     userFrame.userMood.color(moodColor)
     userFrame.userMood:SetTexCoord(unpack(moodIcon))
 
-    if MouseIsOver(userFrame) then userFrame.onEnter() end
+    if MouseIsOver(userFrame) and not selGroup then userFrame.onEnter() end
   end
 end
 
@@ -1850,11 +1984,25 @@ end
 local function addToList(page,id,text,t,un,s,n,q,specs,spell,link)
   local hex = ITEM_QUALITY_COLORS[q].hex
   local owned = nil
+  local known = nil
   if t == 1 then owned = select(11,C_MountJournal.GetMountInfoByID(spell)) --MOUNT
   elseif t == 3 then owned = PlayerHasToy(id) --TOY
   elseif t == 4 then owned = C_Heirloom.PlayerHasHeirloom(id) --HEIRLOOM
   elseif t == 5 then owned = C_PetJournal.GetNumCollectedInfo(spell) > 0 --PET
-  elseif specs.s > 0 then owned = C_TransmogCollection.PlayerHasTransmog(id)
+  elseif specs.s > 0 then
+    owned = C_TransmogCollection.PlayerHasTransmog(id)
+    if q == 7 then elseif owned then known = owned else
+      local transmogID = C_TransmogCollection.GetItemInfo(id)
+      local sources = C_TransmogCollection.GetAllAppearanceSources(transmogID)
+      if #sources > 1 then
+        known = false
+        for _,src in ipairs(sources) do
+          if C_TransmogCollection.PlayerHasTransmogItemModifiedAppearance(src) then
+            known = true; break
+          end
+        end
+      end
+    end
   else owned = setOwned() end
   table.insert(memory[page],{
     itemID = id,
@@ -1863,6 +2011,7 @@ local function addToList(page,id,text,t,un,s,n,q,specs,spell,link)
     name = hex.."["..n.."]",
     itemSpecs = specs,
     owned = owned,
+    known = known,
     itemLink = hex.."|Hitem:"..id..link.."|h["..n.."]|h|r",
     t = t,
     un = un,
@@ -1870,7 +2019,7 @@ local function addToList(page,id,text,t,un,s,n,q,specs,spell,link)
     uid = uid()
   })
   flags.item[id] = memory[page][#memory[page]]
-  if spell then flags.spell[spell] = flags.item[id] end
+  if flagType[t] then flagType[t][spell] = flags.item[id] end
 end
 
 local lang = 1
@@ -1887,7 +2036,7 @@ local function loadDB(array,page,src)
   for i = 1,#array,2 do
     local id = array[i]
     local text = array[i + 1]
-    local item = src[id]
+    local item = type(src[id]) == "table" and src[id] or src[src[id]]
     item.specs.s = -1 --COUNTS AS 0
     for _ in pairs(item.specs) do item.specs.s = item.specs.s + 1 end
     addToList(page,id,text,item.t,item.un,item.s,item.n[lang],item.q,item.specs,item.spell,item.link)
@@ -1959,10 +2108,10 @@ local function lootUpdate()
 end
 
 local needToLoad = {}
-for i = 1,GetNumAddOns() do
-  local loaded,finished = IsAddOnLoaded(i)
+for i = 1,C_AddOns.GetNumAddOns() do
+  local loaded,finished = C_AddOns.IsAddOnLoaded(i)
   if loaded and not finished then
-    needToLoad[GetAddOnInfo(i)] = true
+    needToLoad[C_AddOns.GetAddOnInfo(i)] = true
   end
 end
 
@@ -1975,8 +2124,9 @@ local function startLoading()
   loadDB(data4,8,db.d)
   loadDB(data5,9,db.e)
   loadDB(data6,10,db.f)
-  loadDB(data7,11,db.g)
-  
+  loadDB(data7,12,db.g)
+  loadDB(data8,13,db.h)
+
   for i = 1,15 do
     local userFrame = createUserFrame((i - 1) * -24)
     if i <= #memory[mI] then
@@ -2052,6 +2202,7 @@ main:SetScript("OnEvent",function(self,event,arg1,arg2,arg3,...)
       if settings.custom == nil then settings.custom = false end
       if settings.hideUnobt == nil then settings.hideUnobt = false end
       if settings.unlisted == nil then settings.unlisted = false end
+      if settings.hideKnown == nil then settings.hideKnown = false end
       if settings.hideIcon then iconButton:Hide() end
       memory[4][1] = {itemID = nil,text = (settings.custom == false) and "Disabled" or settings.custom,name = "Custom message",specID = -13,uid = uid()}
       memory[4][2] = {itemID = nil,text = state[settings.instant],name = "Instant notifications",specID = -12,uid = uid()}
@@ -2060,7 +2211,8 @@ main:SetScript("OnEvent",function(self,event,arg1,arg2,arg3,...)
       memory[4][5] = {itemID = nil,text = state[settings.hideIcon],name = "Hide minimap button",specID = -5,uid = uid()}
       memory[4][6] = {itemID = nil,text = state[settings.hideMerchant],name = "Hide collected at merchant",specID = -7,uid = uid()}
       memory[4][7] = {itemID = nil,text = state[settings.hideUnobt],name = "Hide unobtainable",specID = -16,uid = uid()}
-      memory[4][8] = {itemID = nil,text = state[settings.hideOwned],name = "Hide collected",specID = -4,uid = uid()}
+      memory[4][8] = {itemID = nil,text = state[settings.hideKnown],name = "Hide known transmog",specID = -22,uid = uid()}
+      memory[4][9] = {itemID = nil,text = state[settings.hideOwned],name = "Hide collected",specID = -4,uid = uid()}
       setIconPos(iconDegrees)
     end
     needToLoad[arg1] = nil
@@ -2073,12 +2225,12 @@ main:SetScript("OnEvent",function(self,event,arg1,arg2,arg3,...)
     if sourceInfo then checkID(flags.item[sourceInfo.itemID]) end
   --elseif event == "GET_ITEM_INFO_RECEIVED" then gotdata(arg1)
   elseif event == "UNIT_SPELLCAST_SUCCEEDED" and arg1 == "player" then checkID(flags.spell[arg3])
-  elseif event == "NEW_MOUNT_ADDED" then checkID(flags.spell[arg1])
+  elseif event == "NEW_MOUNT_ADDED" then checkID(flags.mount[arg1])
   elseif event == "NEW_TOY_ADDED" then checkID(flags.item[arg1])
   elseif event == "HEIRLOOMS_UPDATED" and arg2 == "NEW" then checkID(flags.item[arg1])
   elseif event == "NEW_PET_ADDED" then
     local speciesID = C_PetJournal.GetPetInfoByPetID(arg1)
-    if C_PetJournal.GetNumCollectedInfo(speciesID) == 1 then checkID(flags.spell[speciesID]) end
+    if C_PetJournal.GetNumCollectedInfo(speciesID) == 1 then checkID(flags.pet[speciesID]) end
   elseif event == "CHAT_MSG_LOOT" then
     if settings.trade and select(9,...) ~= myGUID then
       local id = tonumber(arg1:match("item:(%d+):"))
