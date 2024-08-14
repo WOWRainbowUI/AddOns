@@ -71,7 +71,7 @@ local debug = addon:GetModule('Debug')
 ---@field containerInfo ContainerItemInfo
 ---@field questInfo ItemQuestInfo
 ---@field transmogInfo TransmogInfo
----@field bindingInfo BindingInfo
+---@field bindingInfo? BindingInfo
 ---@field bagid number
 ---@field slotid number
 ---@field slotkey string
@@ -839,7 +839,7 @@ function items:AttachItemInfo(data, kind)
     hasTransmog = C_TransmogCollection and C_TransmogCollection.PlayerHasTransmog(itemID, itemModifiedAppearanceID)
   }
 
-  data.bindingInfo = binding.GetItemBinding(itemLocation, bindType)
+  data.bindingInfo = binding.GetItemBinding(itemID, itemLocation, itemLink)
 
   data.itemInfo = {
     itemID = itemID,
