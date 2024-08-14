@@ -12,6 +12,9 @@ local QueryParser = addon:GetModule('QueryParser')
 ---@class Debug: AceModule
 local debug = addon:GetModule('Debug')
 
+---@class Binding: AceModule
+local binding = addon:GetModule('Binding')
+
 ---@class Trees: AceModule
 local trees = addon:GetModule('Trees')
 
@@ -49,6 +52,8 @@ function search:OnInitialize()
   self:CreateIndex('expansion')
   self:CreateIndex('equipmentset')
   self:CreateIndex('bagName')
+  self:CreateIndex('guid')
+  self:CreateIndex('binding')
 
   -- Number indexes
   self:CreateIndex('level')
@@ -60,10 +65,12 @@ function search:OnInitialize()
   self:CreateIndex('subclass')
   self:CreateIndex('bagid')
   self:CreateIndex('slotid')
+  self:CreateIndex('bindtype')
 
   -- Boolean indexes
   self:CreateIndex('reagent')
-  self:CreateIndex('bound')
+  self:CreateIndex('isbound') -- from C_Item
+  self:CreateIndex('bound') -- from Binding
   self:CreateIndex('quest')
   self:CreateIndex('activequest')
 
@@ -72,14 +79,15 @@ function search:OnInitialize()
     'type',
     'category',
     'subtype',
-    'equipmentlocation'
+    'equipmentlocation',
+    'binding',
   }
 
   self.indexLookup = {
     exp = self.indicies.expansion,
     slot = self.indicies.equipmentlocation,
     ilvl = self.indicies.level,
-    count = self.indicies.stackCount,
+    count = self.indicies.stackcount,
   }
 end
 
@@ -130,6 +138,7 @@ end
 ---@param value string
 ---@param slotkey string
 function search:addStringToIndex(index, value, slotkey)
+  if value == nil or value == "" then return end
   local prefix = ""
   value = string.lower(value)
   for i = 1, #value do
@@ -146,6 +155,7 @@ end
 ---@param value string
 ---@param slotkey string
 function search:removeStringFromIndex(index, value, slotkey)
+  if value == nil or value == "" then return end
   local prefix = ""
   value = string.lower(value)
   for i = 1, #value do
@@ -158,11 +168,20 @@ function search:removeStringFromIndex(index, value, slotkey)
 end
 
 ---@param item ItemData
+---@param oldCategory string
+function search:UpdateCategoryIndex(item, oldCategory)
+  if item == nil or item.isItemEmpty or item.itemInfo.category == nil then return end
+  search:removeStringFromIndex(self.indicies.category, oldCategory, item.slotkey)
+  search:addStringToIndex(self.indicies.category, item.itemInfo.category, item.slotkey)
+end
+
+---@param item ItemData
 function search:Add(item)
   search:addStringToIndex(self.indicies.name, item.itemInfo.itemName, item.slotkey)
   search:addStringToIndex(self.indicies.type, item.itemInfo.itemType, item.slotkey)
   search:addStringToIndex(self.indicies.subtype, item.itemInfo.itemSubType, item.slotkey)
   search:addStringToIndex(self.indicies.category, item.itemInfo.category, item.slotkey)
+  search:addStringToIndex(self.indicies.guid, item.itemInfo.itemGUID, item.slotkey)
   --search:addStringToIndex(self.indicies.bagName, item.bagName, item.slotkey)
 
   if item.itemInfo.equipmentSet ~= nil then
@@ -179,6 +198,8 @@ function search:Add(item)
     search:addStringToIndex(self.indicies.equipmentlocation, _G[item.itemInfo.itemEquipLoc], item.slotkey)
   end
 
+  search:addStringToIndex(self.indicies.binding, const.BINDING_MAP[item.bindingInfo.binding], item.slotkey)
+
   search:addNumberToIndex(self.indicies.level, item.itemInfo.currentItemLevel, item.slotkey)
   search:addNumberToIndex(self.indicies.rarity, item.itemInfo.itemQuality, item.slotkey)
   search:addNumberToIndex(self.indicies.id, item.itemInfo.itemID, item.slotkey)
@@ -187,9 +208,11 @@ function search:Add(item)
   search:addNumberToIndex(self.indicies.subclass, item.itemInfo.subclassID, item.slotkey)
   search:addNumberToIndex(self.indicies.bagid, item.bagid, item.slotkey)
   search:addNumberToIndex(self.indicies.slotid, item.slotid, item.slotkey)
+  search:addNumberToIndex(self.indicies.bindtype, item.itemInfo.bindType, item.slotkey)
 
   search:addBoolToIndex(self.indicies.reagent, item.itemInfo.isCraftingReagent, item.slotkey)
-  search:addBoolToIndex(self.indicies.bound, item.itemInfo.isBound, item.slotkey)
+  search:addBoolToIndex(self.indicies.isbound, item.itemInfo.isBound, item.slotkey)
+  search:addBoolToIndex(self.indicies.bound, item.bindingInfo.bound, item.slotkey)
   search:addBoolToIndex(self.indicies.quest, item.questInfo.isQuestItem, item.slotkey)
   search:addBoolToIndex(self.indicies.activequest, item.questInfo.isActive, item.slotkey)
 end
@@ -200,6 +223,7 @@ function search:Remove(item)
   search:removeStringFromIndex(self.indicies.type, item.itemInfo.itemType, item.slotkey)
   search:removeStringFromIndex(self.indicies.subtype, item.itemInfo.itemSubType, item.slotkey)
   search:removeStringFromIndex(self.indicies.category, item.itemInfo.category, item.slotkey)
+  search:removeStringFromIndex(self.indicies.guid, item.itemInfo.itemGUID, item.slotkey)
   --search:removeStringFromIndex(self.indicies.bagName, item.bagName, item.slotkey)
 
   if item.itemInfo.equipmentSet ~= nil then
@@ -216,6 +240,8 @@ function search:Remove(item)
     search:removeStringFromIndex(self.indicies.equipmentlocation, _G[item.itemInfo.itemEquipLoc], item.slotkey)
   end
 
+  search:removeStringFromIndex(self.indicies.binding, const.BINDING_MAP[item.bindingInfo.binding], item.slotkey)
+
   search:removeNumberFromIndex(self.indicies.level, item.itemInfo.currentItemLevel, item.slotkey)
   search:removeNumberFromIndex(self.indicies.rarity, item.itemInfo.itemQuality, item.slotkey)
   search:removeNumberFromIndex(self.indicies.id, item.itemInfo.itemID, item.slotkey)
@@ -224,9 +250,11 @@ function search:Remove(item)
   search:removeNumberFromIndex(self.indicies.subclass, item.itemInfo.subclassID, item.slotkey)
   search:removeNumberFromIndex(self.indicies.bagid, item.bagid, item.slotkey)
   search:removeNumberFromIndex(self.indicies.slotid, item.slotid, item.slotkey)
+  search:removeNumberFromIndex(self.indicies.bindtype, item.itemInfo.bindType, item.slotkey)
 
   search:removeBoolFromIndex(self.indicies.reagent, item.itemInfo.isCraftingReagent, item.slotkey)
-  search:removeBoolFromIndex(self.indicies.bound, item.itemInfo.isBound, item.slotkey)
+  search:removeBoolFromIndex(self.indicies.isbound, item.itemInfo.isBound, item.slotkey)
+  search:removeBoolFromIndex(self.indicies.bound, item.bindingInfo.bound, item.slotkey)
   search:removeBoolFromIndex(self.indicies.quest, item.questInfo.isQuestItem, item.slotkey)
   search:removeBoolFromIndex(self.indicies.activequest, item.questInfo.isActive, item.slotkey)
 end
@@ -265,13 +293,51 @@ function search:isInIndex(name, value)
   return index.ngrams[string.lower(value)] or {}
 end
 
+---@param name string The name of the search index to lookup
+---@param value any
+---@return table<string, boolean>
+function search:isNotInIndex(name, value)
+  local index = self:GetIndex(name)
+  if not index then return {} end
+  ---@type table<string, boolean>
+  local results = {
+    ["___NEGATED___"] = true
+  }
+  if type(tonumber(value)) == 'number' then
+    local node = index.numbers:ExactMatch(tonumber(value)--[[@as number]])
+    if node then
+      for k in pairs(node.data) do
+        results[k] = false
+      end
+      return results
+    else
+      return results
+    end
+  end
+
+  local b = self:StringToBoolean(string.lower(value))
+  if b ~= nil then
+    for k in pairs(index.bools[b]) do
+      results[k] = false
+    end
+    return results
+  end
+
+  if index.ngrams[string.lower(value)] ~= nil then
+    for k in pairs(index.ngrams[string.lower(value)]) do
+      results[k] = false
+    end
+  end
+  return results
+end
+
 ---@param value any
 ---@return table<string, boolean>
 function search:DefaultSearch(value)
   ---@type table<string, boolean>
   local slots = {}
   for _, property in ipairs(self.defaultIndicies) do
-    for slotkey in pairs(self:isInIndex(property, value)) do
+    for slotkey in pairs(self:isFullTextMatch(property, value)) do
       slots[slotkey] = true
     end
   end
@@ -409,32 +475,36 @@ function search:isRarity(operator, value)
   if type(tonumber(value)) == 'number' then
     if operator == "=" then
       return self:isInIndex('rarity', value)
+    elseif operator == "!=" then
+      return self:isNotInIndex('rarity', value)
     elseif operator == ">=" then
-        return self:isGreaterOrEqual('rarity', value)
+      return self:isGreaterOrEqual('rarity', value)
     elseif operator == "<=" then
-        return self:isLessOrEqual('rarity', value)
+      return self:isLessOrEqual('rarity', value)
     elseif operator == ">" then
-        return self:isGreater('rarity', value)
+      return self:isGreater('rarity', value)
     elseif operator == "<" then
-        return self:isLess('rarity', value)
+      return self:isLess('rarity', value)
     else
-        error("Unknown operator: " .. operator)
+      error("Unknown operator: " .. operator)
     end
   end
   local rarity = const.ITEM_QUALITY_TO_ENUM[value] --[[@as Enum.ItemQuality]]
   if not rarity then return {} end
   if operator == "=" then
     return self:isInIndex('rarity', rarity)
+  elseif operator == "!=" then
+    return self:isNotInIndex('rarity', rarity)
   elseif operator == ">=" then
-      return self:isGreaterOrEqual('rarity', rarity)
+    return self:isGreaterOrEqual('rarity', rarity)
   elseif operator == "<=" then
-      return self:isLessOrEqual('rarity', rarity)
+    return self:isLessOrEqual('rarity', rarity)
   elseif operator == ">" then
-      return self:isGreater('rarity', rarity)
+    return self:isGreater('rarity', rarity)
   elseif operator == "<" then
-      return self:isLess('rarity', rarity)
+    return self:isLess('rarity', rarity)
   else
-      error("Unknown operator: " .. operator)
+    error("Unknown operator: " .. operator)
   end
 end
 
@@ -445,6 +515,10 @@ function search:EvaluateAST(node)
       error("Encountered nil node in AST")
   end
 
+  ---@param field string
+  ---@param operator string
+  ---@param value any
+  ---@return table<string, boolean>
   local function evaluate_condition(field, operator, value)
       value = string.lower(value)
       field = string.lower(field)
@@ -453,19 +527,21 @@ function search:EvaluateAST(node)
         return self:isRarity(operator, value)
       end
       if operator == "=" then
-          return self:isInIndex(field, value)
+        return self:isInIndex(field, value)
+      elseif operator == "!=" then
+        return self:isNotInIndex(field, value)
       elseif operator == "%=" then
-          return self:isFullTextMatch(field, value)
+        return self:isFullTextMatch(field, value)
       elseif operator == ">=" then
-          return self:isGreaterOrEqual(field, value)
+        return self:isGreaterOrEqual(field, value)
       elseif operator == "<=" then
-          return self:isLessOrEqual(field, value)
+        return self:isLessOrEqual(field, value)
       elseif operator == ">" then
-          return self:isGreater(field, value)
+        return self:isGreater(field, value)
       elseif operator == "<" then
-          return self:isLess(field, value)
+        return self:isLess(field, value)
       else
-          error("Unknown operator: " .. operator)
+        error("Unknown operator: " .. operator)
       end
   end
 
@@ -474,40 +550,54 @@ function search:EvaluateAST(node)
   ---@param right table<string, boolean>
   ---@return table<string, boolean>
   local function combine_results(op, left, right)
-      ---@type table<string, boolean>
-      local result = {}
-      if op == "AND" then
-          for k in pairs(left) do
-            if left[k] and right[k] then
-              result[k] = true
-            elseif left[k] == false or right[k] == false then
-              result[k] = false
-            elseif left[k] == true and right[k] == nil and right["___NEGATED___"] == true then
-              result[k] = true
-            elseif left[k] == true and right[k] == nil and not right["___NEGATED___"] then
-              result[k] = false
-            else
-              result[k] = true
-            end
+    ---@type table<string, boolean>
+    local result = {}
+    if op == "AND" then
+      for k in pairs(left) do
+        if left[k] == true then
+          if right[k] == true or (right[k] == nil and right["___NEGATED___"] == true) then
+            result[k] = true
+          else
+            result[k] = false
           end
-          for k in pairs(right) do
-            if right[k] and left[k] then
-              result[k] = true
-            elseif right[k] == false or left[k] == false then
-              result[k] = false
-            elseif right[k] == true and left[k] == nil and left["___NEGATED___"] == true then
-              result[k] = true
-            elseif right[k] == true and left[k] == nil and not left["___NEGATED___"] then
-              result[k] = false
-            else
-              result[k] = true
-            end
+        elseif left[k] == false then
+          result[k] = false
+        elseif left[k] == nil and left["___NEGATED___"] == true then
+          if right[k] == false then
+            result[k] = true
+          else
+            result[k] = false
           end
-      elseif op == "OR" then
-          for k, v in pairs(left) do result[k] = v end
-          for k, v in pairs(right) do result[k] = v end
+        end
       end
-      return result
+      for k in pairs(right) do
+        if not result[k] then
+          if right[k] == true then
+            if left[k] == true or (left[k] == nil and left["___NEGATED___"] == true) then
+              result[k] = true
+            else
+              result[k] = false
+            end
+          elseif right[k] == false then
+              result[k] = false
+          elseif right[k] == nil and right["___NEGATED___"] == true then
+            if left[k] == false then
+              result[k] = true
+            else
+              result[k] = false
+            end
+          end
+        end
+      end
+    elseif op == "OR" then
+      for k, v in pairs(left) do result[k] = v end
+      for k, v in pairs(right) do
+        if result[k] == nil or (result[k] == false and v == true) then
+          result[k] = v
+        end
+      end
+    end
+    return result
   end
 
   if node.type == "logical" then
@@ -517,7 +607,7 @@ function search:EvaluateAST(node)
           return combine_results(node.operator, left, right)
       elseif node.operator == "NOT" then
           if node.expression == nil then
-              error("NOT node has no expression")
+              return {}
           end
           local result = self:EvaluateAST(node.expression)
          ---@type table<string, boolean> 
@@ -543,7 +633,10 @@ end
 ---@return table<string, boolean>, table<string, boolean>
 function search:EvaluateQuery(ast)
   if ast == nil then return {}, {} end
+  debug:Inspect("ast", ast)
   local result = self:EvaluateAST(ast)
+  debug:Inspect("ast result", result)
+
   ---@type table<string, boolean>, table<string, boolean>
   local positive, negative = {}, {}
   for k, v in pairs(result) do
@@ -552,6 +645,22 @@ function search:EvaluateQuery(ast)
       else
           negative[k] = true
       end
+  end
+
+  -- This is a special case where we want to return all items in the index that are not
+  -- in the result set, as this is a negation of the entire index.
+  if not ast.left and not ast.right and ast.operator == "!=" then
+    -- JIT load this module, as there is a circular dependency.
+    ---@class Items: AceModule
+    local items = addon:GetModule('Items')
+
+    for _, slotInfo in pairs(items:GetAllSlotInfo()) do
+      for k in pairs(slotInfo.itemsBySlotKey) do
+        if not negative[k] then
+          positive[k] = true
+        end
+      end
+    end
   end
   return positive, negative
 end

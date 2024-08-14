@@ -42,6 +42,9 @@ if GetLocale() == "zhTW" then
 	L.data["Open Options Screen"] = "打開選項"
 	L.data["Click to open the options screen."] = "點一下打開設定選項視窗。"
 	L.data["Close Menu"] = "關閉選單"	
+	L.data["Bag Anchor"] = "固定位置"	
+	L.data["Enable"] = "啟用"	
+	L.data["Show"] = "顯示對齊點"	
 	
 	-- constants.lua
 	L.data["Engineering"] = "工程學"
@@ -127,6 +130,8 @@ if GetLocale() == "zhTW" then
 	L.data["Set the opacity of this bag."] = "設定背包的不透明度。"
 	L.data["Scale"] = "縮放大小"
 	L.data["Set the scale of this bag."] = "設定背包的縮放大小。"
+	L.data["Show All Free Space Slots"] = "顯示所有空格子"
+	L.data["Show all free space slots in the bag window."] = "在背包視窗中顯示所有空的格子。"
 	
 	-- config\config.lua
 	L.data["General"] = "一般"
@@ -138,6 +143,8 @@ if GetLocale() == "zhTW" then
 	L.data["The time, in minutes, to consider an item a new item."] = "新的物品要保留多久時間後自動歸類，以分鐘為單位。"
 	L.data["Plugins"] = "外掛套件"
 	L.data["Plugin configuration options can be accessed on the left by expanding the 'Plugins' menu option."] = "將左側的 '外掛套件' 選單展開，可以看到外掛套件的設定選項。"
+	L.data["Enable Category Sell"] = "啟用賣出分類"
+	L.data["If enabled, right-clicking a category header at a NPC shop will sell all its contents (limited to 10 stacks to allow buy-backs)."] = "啟用時，在商人介面時右鍵點背包中的分類標題，會賣出分類中的所有東西 (一次最多賣出10件以便能買回)。"
 	
 	-- config\customcat.lua 
 	L.data["Items"] = "物品"
@@ -161,12 +168,47 @@ if GetLocale() == "zhTW" then
 	L.data["How do I search for items?"] = "我該如何搜尋物品?"
 	L.data[ [[
     You can bind a key to open the search bar in the World of Warcraft keybindings menu. You can also open the search bar by shift clicking on the bag button at the top of the bag frame.
-    Once the search bar is open, you can type in the name of an item to search for it. You can also use the following search operators:
-    - `type:` to search for items of a specific type (e.g. `type:weapon`)
-    - `subtype:` to search for items of a specific subtype (e.g. `subtype:axe`)
-    - `name:` to search for items with a specific name (e.g. `name:axe`)
-    - `gear:` to search for items that are part of an equipment set (e.g. `gear:tank`)
-    - `exp:` to search for items from a specific expansion (e.g. `exp:shadowlands`)
+    Once the search bar is open, you can type in the name of an item to search for it.
+    The BetterBags search engine is extremly comprehensive and supports many different search operators and grouping.
+    You can search for items by a number of fields, such as name, type, subtype, expansion, and more, or combine multiple fields to create complex searches.
+
+    Logical Operators include:
+    - `AND` to combine multiple search terms (e.g. `axe AND sword`)
+    - `OR` to search for items that match any of the search terms (e.g. `axe OR sword`)
+    - `NOT` to exclude items that match a search term (e.g. `NOT axe`)
+    - `(` and `)` to group search terms (e.g. `(axe OR sword) AND epic`)
+
+    Comparison Operators include:
+    - `>` to search for items with a value greater than a number (e.g. `level > 10`)
+    - `<` to search for items with a value less than a number (e.g. `level < 10`)
+    - `=` to search for items with a value equal to a number or text (e.g. `level = 10 or name = axe`)
+    - `>=` to search for items with a value greater than or equal to a number (e.g. `level >= 10`)
+    - `<=` to search for items with a value less than or equal to a number (e.g. `level <= 10`)
+
+    The following fields are supported:
+    - `name` to search for items by name (e.g. `name = axe`)
+    - `type` to search for items by type (e.g. `type = weapon`)
+    - `subtype` to search for items by subtype (e.g. `subtype = axe`)
+    - `equipmentLocation` to search for items by equipment location (e.g. `equipmentLocation = head`)
+    - `expansion` to search for items by expansion (e.g. `expansion = classic`)
+    - `level` to search for items by level (e.g. `level > 10`)
+    - `rarity` to search for items by rarity (e.g. `rarity = rare`)
+    - `id` to search for items by id (e.g. `id = 12345`)
+    - `stackCount` to search for items by stack count (e.g. `stackCount > 10`)
+    - `class` to search for items by classID (e.g. `class = 10`)
+    - `subclass` to search for items by subclassID (e.g. `subclass = 10`)
+    - `bagid` to search for items by bagID (e.g. `bagid = 0`)
+    - `slotid` to search for items by slotID (e.g. `slotid = 0`)
+    - `reagent` to search for items by reagent (e.g. `reagent = true`)
+    - `bound` to search for items by bound status (e.g. `bound = true`)
+    - `quest` to search for items by quest status (e.g. `quest = true`)
+    - `activeQuest` to search for items by active quest status (e.g. `activeQuest = true`)
+  
+    For rarity, you can use numerical comparison operators on rarity names, for example:
+    - `rarity = poor`
+    - `rarity > common`
+    - `rarity >= uncommon`
+    - ...etc
     
     For expansions, you can use the following expansions shortcuts (e.g. `exp:classic`):
     - `classic`
@@ -180,25 +222,60 @@ if GetLocale() == "zhTW" then
     - `shadowlands`
     - `dragonflight`
   ]] ] = [[
-    可以在遊戲選項的按鍵綁定中設定一個快速鍵來打開搜尋欄，也可以用 Shift+左鍵點擊背包視窗左上角的背包圖示來打開搜尋欄。
-    搜索欄打開後，可以輸入物品名稱來進行搜尋。還可以使用下面的搜尋運算符：
-    - `type:` 用來搜尋指定類型的物品 (例如 `type:武器`)
-    - `subtype:` 用來搜尋指定子類型的物品 (例如 `subtype:斧`)
-    - `name:` 用來搜尋指定名稱的物品 (例如 `name:斧`)
-    - `gear:` 用來搜尋套裝設定中的物品 (例如 `gear:坦克`)
-    - `exp:` 用來搜尋指定資料片的物品 (例如 `exp:暗影之境`)
-    
-    資料片可以使用下面的英文縮寫 (例如 `exp:classic`):
-    - `classic`
-    - `tbc`
-    - `wotlk`
-    - `cata`
-    - `mop`
-    - `wod`
-    - `legion`
-    - `bfa`
-    - `shadowlands`
-    - `dragonflight`
+可以在遊戲選項的按鍵綁定中設定一個快速鍵來打開搜尋欄，也可以用 Shift+左鍵點擊背包視窗左上角的背包圖示來打開搜尋欄。
+搜尋欄打開後，可以輸入物品名稱來進行搜尋。
+BetterBags 搜尋引擎功能極其全面，支持許多不同的搜尋運算符和分組。
+可以通過多個欄位搜尋物品，例如名稱、類型、子類型、資料片等等，或者組合多個欄位來創建複雜的搜尋。
+
+邏輯運算符包括：
+- `AND` 用於組合多個搜尋詞（例如 `axe AND sword`）
+- `OR` 用於搜尋匹配任何搜尋詞的物品（例如 `axe OR sword`）
+- `NOT` 用於排除匹配搜尋詞的物品（例如 `NOT axe`）
+- `(` 和 `)` 用於將搜尋詞分組（例如 `(axe OR sword) AND epic`）
+
+比較運算符包括：
+- `>` 用於搜尋數值大於指定數字的物品（例如 `level > 10`）
+- `<` 用於搜尋數值小於指定數字的物品（例如 `level < 10`）
+- `=` 用於搜尋數值等於指定數字或文字的物品（例如 `level = 10 or name = axe`）
+- `>=` 用於搜尋數值大於或等於指定數字的物品（例如 `level >= 10`）
+- `<=` 用於搜尋數值小於或等於指定數字的物品（例如 `level <= 10`）
+
+支持以下欄位：
+- `name` 依名稱搜尋物品（例如 `name = axe`）
+- `type` 依類型搜尋物品（例如 `type = weapon`）
+- `subtype` 依子類型搜尋物品（例如 `subtype = axe`）
+- `equipmentLocation` 依裝備位置搜尋物品（例如 `equipmentLocation = head`）
+- `expansion` 依資料片搜尋物品（例如 `expansion = classic`）
+- `level` 依等級搜尋物品（例如 `level > 10`）
+- `rarity` 依稀有度搜尋物品（例如 `rarity = rare`）
+- `id` 依 ID 搜尋物品（例如 `id = 12345`）
+- `stackCount` 依堆疊數量搜尋物品（例如 `stackCount > 10`）
+- `class` 依職業 ID 搜尋物品（例如 `class = 10`）
+- `subclass` 依子職業 ID 搜尋物品（例如 `subclass = 10`）
+- `bagid` 依背包 ID 搜尋物品（例如 `bagid = 0`）
+- `slotid` 依格子 ID 搜尋物品（例如 `slotid = 0`）
+- `reagent` 依試劑搜尋物品（例如 `reagent = true`）
+- `bound` 依綁定狀態搜尋物品（例如 `bound = true`）
+- `quest` 依任務物品狀態搜尋物品（例如 `quest = true`）
+- `activeQuest` 依活動任務物品狀態搜尋物品（例如 `activeQuest = true`）
+
+對於稀有度，你可以對稀有度名稱使用數值比較運算符，例如：
+- `rarity = poor`
+- `rarity > common`
+- `rarity >= uncommon`
+- ...等等
+
+對於資料片，你可以使用以下資料片簡稱（例如 `exp:classic`）：
+- `classic`
+- `tbc`
+- `wotlk`
+- `cata`
+- `mop`
+- `wod`
+- `legion`
+- `bfa`
+- `shadowlands`
+- `dragonflight`
   ]]
 	
 	-- config\itemlist.lua
@@ -219,6 +296,18 @@ if GetLocale() == "zhTW" then
 	L.data["Keyring"] = "鑰匙圈"
 	L.data["Gem Bag"] = "寶石包"
 	L.data["Mining Bag"] = "採礦包"
+	L.data["nonbinding"] = "沒有綁定"
+	L.data["boe"] = "裝備綁定"
+	L.data["bou"] = "使用綁定"
+	L.data["quest"] = "任務"
+	L.data["soulbound"] = "靈魂綁定"
+	L.data["refundable"] = "可退回"
+	L.data["warbound"] = "戰隊"
+	L.data["bnet"] = "戰網"
+	L.data["wue"] = "wue"
+	
+	-- data/categories.lua
+	L.data["Attempted to add item %d to category %s, but the item does not exist."] = "嘗試將物品 %d 加入到分類 %s，但是物品不存在。"
 
 	-- frames\bags.lua
 	L.data["Search Reagent Bank"] = "搜尋材料銀行"

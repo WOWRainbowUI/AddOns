@@ -27,6 +27,9 @@ local search = addon:GetModule('Search')
 ---@class Localization: AceModule
 local L = addon:GetModule('Localization')
 
+---@class Binding: AceModule
+local binding = addon:GetModule("Binding")
+
 ---@class Debug: AceModule
 local debug = addon:GetModule('Debug')
 
@@ -59,6 +62,7 @@ local debug = addon:GetModule('Debug')
 ---@field transmogInfoMixin? ItemTransmogInfoMixin
 ---@field itemAppearanceID number
 ---@field itemModifiedAppearanceID number
+---@field hasTransmog boolean
 
 -- ItemData contains all the information about an item in a bag or bank.
 ---@class (exact) ItemData
@@ -67,6 +71,7 @@ local debug = addon:GetModule('Debug')
 ---@field containerInfo ContainerItemInfo
 ---@field questInfo ItemQuestInfo
 ---@field transmogInfo TransmogInfo
+---@field bindingInfo BindingInfo
 ---@field bagid number
 ---@field slotid number
 ---@field slotkey string
@@ -85,6 +90,7 @@ local itemDataProto = {}
 
 ---@class (exact) Items: AceModule
 ---@field private slotInfo table<BagKind, SlotInfo>
+---@field private searchCache table<BagKind, table<string, string>> A table of slotid's to categories.
 ---@field _doingRefresh boolean
 ---@field previousItemGUID table<number, table<number, string>>
 ---@field _newItemTimers table<string, number>
@@ -97,6 +103,10 @@ function items:OnInitialize()
   self.previousItemGUID = {}
   self:ResetSlotInfo()
 
+  self.searchCache = {
+    [const.BAG_KIND.BACKPACK] = {},
+    [const.BAG_KIND.BANK] = {},
+  }
   self._newItemTimers = {}
   self._preSort = false
   self._doingRefresh = false
@@ -149,9 +159,7 @@ function items:PreSort()
   if self._preSort then return end
   self._preSort = true
   C_Timer.After(0.6, function()
-    if self._preSort then
-      self:WipeAndRefreshAll()
-    end
+    self:WipeAndRefreshAll()
   end)
 end
 
@@ -373,7 +381,7 @@ function items:LoadItems(ctx, kind, dataCache)
   if ctx:GetBool('wipe') then
     self:WipeSlotInfo(kind)
   end
-
+  self:WipeSearchCache(kind)
   -- Push the new slot info into the slot info table, and the old slot info
   -- to the previous slot info table.
   self.slotInfo[kind]:Update(ctx, dataCache)
@@ -440,11 +448,55 @@ function items:LoadItems(ctx, kind, dataCache)
     if not currentItem.isItemEmpty then
       slotInfo.totalItems = slotInfo.totalItems + 1
     end
+    local oldCategory = currentItem.itemInfo.category
+    currentItem.itemInfo.category = self:GetCategory(currentItem)
+    search:UpdateCategoryIndex(currentItem, oldCategory)
   end
 
   -- Set the defer delete flag if the total items count has decreased.
   if slotInfo.totalItems < slotInfo.previousTotalItems then
     slotInfo.deferDelete = true
+  end
+
+  -- Refresh the search cache.
+  self:RefreshSearchCache(kind)
+
+  -- Get the categories for each item.
+  for _, currentItem in pairs(slotInfo:GetCurrentItems()) do
+    local newCategory = self:GetSearchCategory(kind, currentItem.slotkey)
+    if newCategory then
+      local oldCategory = currentItem.itemInfo.category
+      currentItem.itemInfo.category = newCategory
+      search:UpdateCategoryIndex(currentItem, oldCategory)
+    end
+  end
+end
+
+---@param kind BagKind
+---@param slotkey string
+---@return string
+function items:GetSearchCategory(kind, slotkey)
+  return self.searchCache[kind][slotkey]
+end
+
+---@param kind BagKind
+function items:WipeSearchCache(kind)
+  wipe(self.searchCache[kind])
+end
+
+---@param kind BagKind
+function items:RefreshSearchCache(kind)
+  self:WipeSearchCache(kind)
+  local categoryTable = categories:GetSortedSearchCategories()
+  for _, categoryFilter in ipairs(categoryTable) do
+    if categoryFilter.enabled[kind] then
+      local results = search:Search(categoryFilter.searchCategory.query)
+      for slotkey, match in pairs(results) do
+        if match then
+          self.searchCache[kind][slotkey] = categoryFilter.name
+        end
+      end
+    end
   end
 end
 
@@ -660,12 +712,17 @@ end
 ---@param data ItemData
 ---@return string
 function items:GetCategory(data)
-  if data.isItemEmpty then return L:G('Empty Slot') end
+  if not data or data.isItemEmpty then return L:G('Empty Slot') end
 
   if database:GetCategoryFilter(data.kind, "RecentItems") then
     if items:IsNewItem(data) then
       return L:G("Recent Items")
     end
+  end
+
+  -- Search categories come before all.
+  if self.searchCache[data.kind][data.slotkey] ~= nil then
+    return self.searchCache[data.kind][data.slotkey]
   end
 
   -- Check for equipment sets first, as it doesn't make sense to put them anywhere else.
@@ -779,7 +836,10 @@ function items:AttachItemInfo(data, kind)
     },
     itemAppearanceID = itemAppearanceID,
     itemModifiedAppearanceID = itemModifiedAppearanceID,
+    hasTransmog = C_TransmogCollection and C_TransmogCollection.PlayerHasTransmog(itemID, itemModifiedAppearanceID)
   }
+
+  data.bindingInfo = binding.GetItemBinding(itemLocation, bindType)
 
   data.itemInfo = {
     itemID = itemID,
@@ -824,7 +884,6 @@ function items:AttachItemInfo(data, kind)
 
   data.itemLinkInfo = self:ParseItemLink(itemLink)
   data.itemHash = self:GenerateItemHash(data)
-  data.itemInfo.category = self:GetCategory(data)
   data.forceClear = false
   data.stacks = 0
   data.stackedCount = data.itemInfo.currentItemCount
@@ -907,4 +966,9 @@ function items:PreLoadAllEquipmentSlots(cb)
     end
   end
   continuableContainer:ContinueOnLoad(cb)
+end
+
+---@return table<BagKind, SlotInfo>
+function items:GetAllSlotInfo()
+  return self.slotInfo
 end

@@ -39,6 +39,7 @@ local db = addon:GetModule('Database')
 ---@field ItemButton? fun(button: Item): ItemButton A function that applies the theme to an item button.
 ---@field Tab? fun(tab: Button): PanelTabButtonTemplate A function that applies the theme to a tab.
 ---@field Reset fun() A function that resets the theme to its default state and removes any special styling.
+---@field DisableMasque? boolean If set to true, Masque will not be used with this theme.
 
 ---@class Themes: AceModule
 ---@field themes table<string, Theme>
@@ -171,6 +172,7 @@ end
 function themes:SetSearchState(frame, shown)
   local theme = self.themes[db:GetTheme()]
   theme.ToggleSearch(frame, shown)
+  events:SendMessage('bags/FullRefreshAll')
 end
 
 -- RegisterPortraitWindow is used to register a protrait window frame to be themed by themes.
@@ -406,7 +408,11 @@ function themes.SetupBagButton(bag, decoration)
       GameTooltip:AddDoubleLine(L:G("Left Click"), L:G("Open Menu"), 1, 0.81, 0, 1, 1, 1)
       GameTooltip:AddDoubleLine(L:G("Shift Left Click"), L:G("Search Bags"), 1, 0.81, 0, 1, 1, 1)
       if addon.isRetail then
-        GameTooltip:AddDoubleLine(L:G("Right Click"), L:G("Deposit Warbank Items"), 1, 0.81, 0, 1, 1, 1)
+        if bag.bankTab == const.BANK_TAB.REAGENT then
+          GameTooltip:AddDoubleLine(L:G("Right Click"), L:G("Deposit Reagent Items"), 1, 0.81, 0, 1, 1, 1)
+        else
+          GameTooltip:AddDoubleLine(L:G("Right Click"), L:G("Deposit Warbank Items"), 1, 0.81, 0, 1, 1, 1)
+        end
       end
     end
 
@@ -446,7 +452,11 @@ function themes.SetupBagButton(bag, decoration)
       end
     elseif e == "RightButton" then
       if bag.kind == const.BAG_KIND.BANK and addon.isRetail then
-        C_Bank.AutoDepositItemsIntoBank(Enum.BankType.Account)
+        if bag.bankTab == const.BANK_TAB.REAGENT then
+          DepositReagentBank()
+        else
+          C_Bank.AutoDepositItemsIntoBank(Enum.BankType.Account)
+        end
       else
         bag:Sort()
       end

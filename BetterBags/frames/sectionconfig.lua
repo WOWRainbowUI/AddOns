@@ -45,6 +45,9 @@ local sectionItemList = addon:GetModule('SectionItemList')
 ---@class Fonts: AceModule
 local fonts = addon:GetModule('Fonts')
 
+---@class SearchCategoryConfig: AceModule
+local searchCategoryConfig = addon:GetModule('SearchCategoryConfig')
+
 ---@class SectionConfig: AceModule
 local sectionConfig = addon:NewModule('SectionConfig')
 
@@ -77,11 +80,12 @@ local sectionConfigFrame = {}
 ---@param category string
 ---@return boolean
 function sectionConfigFrame:OnReceiveDrag(category)
+  if categories:IsDynamicCategory(category) then return false end
   local kind, id = GetCursorInfo()
   if kind ~= "item" or not tonumber(id) then return false end
   ClearCursor()
   local itemid = tonumber(id) --[[@as number]]
-  database:SaveItemToCategory(itemid, category)
+  categories:AddPermanentItemToCategory(itemid, category)
   events:SendMessage('bags/FullRefreshAll')
   return true
 end
@@ -118,11 +122,29 @@ function sectionConfigFrame:initSectionItem(button, elementData)
   -- Set the category font info for the button depending on if it's a header or not.
   if elementData.header then
     button.Category:SetFontObject(fonts.UnitFrame12Yellow)
+    button.Note:SetText("")
     button.Expand:Hide()
   else
     button.Category:SetFontObject(fonts.UnitFrame12White)
     button.Expand:SetScript("OnClick", function()
-      self.itemList:ShowCategory(elementData.title)
+      local filter = categories:GetCategoryByName(elementData.title)
+      if filter.searchCategory then
+        if self.itemList:IsShown() then
+          self.itemList:Hide(function()
+            searchCategoryConfig:Open(filter, self.frame)
+          end)
+        else
+          searchCategoryConfig:Open(filter, self.frame)
+        end
+      else
+        if searchCategoryConfig:IsShown() then
+          searchCategoryConfig:Close(function()
+            self.itemList:ShowCategory(elementData.title)
+          end)
+        else
+          self.itemList:ShowCategory(elementData.title)
+        end
+      end
     end)
     button.Expand:Show()
     if not categories:DoesCategoryExist(elementData.title) then
@@ -134,7 +156,12 @@ function sectionConfigFrame:initSectionItem(button, elementData)
     end
 
     if categories:IsCategoryShown(elementData.title) then
-      button.Note:SetText("")
+      local filter = categories:GetCategoryByName(elementData.title)
+      if filter and filter.searchCategory then
+        button.Note:SetText(format("Priority: %d", filter.priority))
+      else
+        button.Note:SetText("")
+      end
     else
       button.Note:SetText(L:G("(hidden)"))
     end
@@ -163,7 +190,7 @@ function sectionConfigFrame:initSectionItem(button, elementData)
     button:SetScript("OnEnter", function()
       GameTooltip:SetOwner(button, "ANCHOR_LEFT")
       GameTooltip:AddLine(elementData.title, 1, .81960791349411, 0, true)
-      if categories:DoesCategoryExist(elementData.title) then
+      if categories:DoesCategoryExist(elementData.title) and not categories:IsDynamicCategory(elementData.title) then
         GameTooltip:AddLine(L:G([[
         Left click to enable or disable items from being added to this category.
         Drag this category to Pinned to keep it at the top of your bags, or to Automatically Sorted to have it sorted with the rest of your items.]]), 1, 1, 1, true)
@@ -209,7 +236,12 @@ function sectionConfigFrame:initSectionItem(button, elementData)
       func = function()
         categories:ToggleCategoryShown(elementData.title)
         if categories:IsCategoryShown(elementData.title) then
-          button.Note:SetText("")
+          local filter = categories:GetCategoryByName(elementData.title)
+          if filter and filter.searchCategory then
+            button.Note:SetText(format("Priority: %d", elementData.priority or filter.priority))
+          else
+            button.Note:SetText("")
+          end
         else
           button.Note:SetText(L:G("(hidden)"))
         end
@@ -240,7 +272,7 @@ function sectionConfigFrame:initSectionItem(button, elementData)
     contextMenu:Show(menuOptions)
   end)
 
-  if categories:DoesCategoryExist(elementData.title) then
+  if categories:DoesCategoryExist(elementData.title) and not categories:IsDynamicCategory(elementData.title) then
     -- Script handler for dropping items into a category.
     button:SetScript("OnReceiveDrag", function()
       if elementData.header then
@@ -263,7 +295,7 @@ function sectionConfigFrame:initSectionItem(button, elementData)
       if IsShiftKeyDown() then
         self.content.provider:MoveElementDataToIndex(elementData, 2)
         self:UpdatePinnedItems()
-      elseif categories:DoesCategoryExist(elementData.title) then
+      elseif categories:DoesCategoryExist(elementData.title) and not categories:IsDynamicCategory(elementData.title) then
         if categories:IsCategoryEnabled(self.kind, elementData.title) then
           categories:DisableCategory(self.kind, elementData.title)
           button:SetBackdropColor(0, 0, 0, 0)
@@ -457,6 +489,16 @@ function sectionConfig:Create(kind, parent)
     table.sort(names)
     for _, sName in ipairs(names) do
       sc:AddSection(sName)
+    end
+    for index, elementData in sc.content.provider:EnumerateEntireRange() do
+      if not elementData.header and not categories:DoesCategoryExist(elementData.title) and not bag.currentView.sections[elementData.title] and not categories:IsDynamicCategory(elementData.title) then
+        sc.content:RemoveAtIndex(index)
+      end
+      local filter = categories:GetCategoryByName(elementData.title)
+      if filter and filter.searchCategory then
+        sc.content:RemoveAtIndex(index)
+        sc.content:AddAtIndex(elementData, index)
+      end
     end
     if sc.itemList:IsShown() then
       sc.itemList:Redraw()

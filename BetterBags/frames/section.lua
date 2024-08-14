@@ -31,8 +31,18 @@ local themes = addon:GetModule('Themes')
 ---@class GridFrame: AceModule
 local grid = addon:GetModule('Grid')
 
+---@class Database: AceModule
+local db = addon:GetModule('Database')
+
+---@class Items: AceModule
+local items = addon:GetModule('Items')
+
+---@class MovementFlow: AceModule
+local movementFlow = addon:GetModule('MovementFlow')
+
 ---@class Localization: AceModule
 local L = addon:GetModule('Localization') -- 自行加入
+
 -------
 --- Section Prototype
 -------
@@ -228,7 +238,7 @@ function sectionFrame:_DoReset(f)
 end
 
 ---@param section Section
-local function onTitleClickOrDrop(section)
+function sectionFrame:OnTitleClickOrDrop(section)
   if not CursorHasItem() then return end
   if not IsShiftKeyDown() then return end
   local cursorType, itemID = GetCursorInfo()
@@ -236,9 +246,58 @@ local function onTitleClickOrDrop(section)
   ---@cast itemID number
   if cursorType ~= "item" then return end
   local category = section.title:GetText()
-  categories:AddItemToPersistentCategory(itemID, category)
+  categories:AddPermanentItemToCategory(itemID, category)
   ClearCursor()
   events:SendMessage('bags/FullRefreshAll')
+end
+
+---@param section Section
+function sectionFrame:OnTitleRightClick(section)
+  local flow = movementFlow:GetMovementFlow()
+  if flow == const.MOVEMENT_FLOW.UNDEFINED then return end
+  if flow == const.MOVEMENT_FLOW.NPCSHOP and not db:GetCategorySell() then return end
+
+  -- This list contains all items to move.
+  ---@type ItemData[]
+  local list = {}
+
+  for _, cell in pairs(section:GetAllCells()) do
+    local data = cell:GetItemData()
+    if not data.isItemEmpty then
+      table.insert(list, data)
+
+      -- checking stacks if Merge stacks is enabled and Unmerge at Shop disabled
+      local stack = addon:GetBagFromBagID(data.bagid).currentView:GetStack(data.itemHash)
+      if stack ~= nil then
+        for subSlotKey in pairs(stack.subItems) do
+          local subData = items:GetItemDataFromSlotKey(subSlotKey)
+          table.insert(list, subData)
+        end
+      end
+
+    end
+  end
+
+  -- Limit the selling amount to be able to buy back
+  if flow == const.MOVEMENT_FLOW.NPCSHOP then
+    local newlist = {}
+    for i=1, 10 do
+      if list[i] then
+        table.insert(newlist, list[i])
+      end
+    end
+    list = newlist
+  end
+
+  -- Only DF since warbank has Enum.BankType 
+  local containerType = nil
+  if Enum.BankType and flow == const.MOVEMENT_FLOW.WARBANK then
+    containerType = Enum.BankType.Account
+  end
+
+  for _, item in pairs(list) do
+    C_Container.UseContainerItem(item.bagid, item.slotid, nil, containerType, flow == const.MOVEMENT_FLOW.REAGENT)
+  end
 end
 
 function sectionProto:onTitleMouseEnter()
@@ -293,14 +352,20 @@ function sectionFrame:_DoCreate()
     GameTooltip:Hide()
   end)
 
-  title:SetScript("OnClick", function()
+  title:RegisterForClicks("LeftButtonUp", "RightButtonUp")
+
+  title:SetScript("OnClick", function(_, e)
     if s.headerDisabled then return end
-    onTitleClickOrDrop(s)
+    if e == "RightButton" then
+      sectionFrame:OnTitleRightClick(s)
+    elseif e == "LeftButton" then
+      sectionFrame:OnTitleClickOrDrop(s)
+    end
   end)
 
   title:SetScript("OnReceiveDrag", function()
     if s.headerDisabled then return end
-    onTitleClickOrDrop(s)
+    sectionFrame:OnTitleClickOrDrop(s)
   end)
 
   s.title = title
