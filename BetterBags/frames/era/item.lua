@@ -112,6 +112,7 @@ function itemFrame.itemProto:SetItemFromData(data)
     self.ilvlText:Hide()
   end
 
+  SetItemButtonQuality(decoration, data.itemInfo.itemQuality)
   decoration.minDisplayCount = 1
   SetItemButtonTexture(decoration, data.itemInfo.itemIcon)
   decoration.IconBorder:SetTexture([[Interface\Common\WhiteIconFrame]])
@@ -153,19 +154,17 @@ function itemFrame.itemProto:SetItemFromData(data)
   self.isFreeSlot = nil
   self:SetAlpha(1)
   if self.slotkey ~= nil then
-    events:SendMessage('item/Updated', self)
+    events:SendMessage('item/Updated', self, decoration)
   end
   self.frame:Show()
   self.button:Show()
 end
 
-
 -- SetFreeSlots will set the item button to a free slot.
 ---@param bagid number
 ---@param slotid number
 ---@param count number
----@param name string
-function itemFrame.itemProto:SetFreeSlots(bagid, slotid, count, name)
+function itemFrame.itemProto:SetFreeSlots(bagid, slotid, count)
   local decoration = themes:GetItemButton(self)
   self.slotkey = items:GetSlotKeyFromBagAndSlot(bagid, slotid)
   if const.BANK_BAGS[bagid] or const.REAGENTBANK_BAGS[bagid] then
@@ -184,6 +183,7 @@ function itemFrame.itemProto:SetFreeSlots(bagid, slotid, count, name)
   self.frame:SetID(bagid)
   self.freeSlotCount = count
   self.isFreeSlot = true
+  local quality = self:GetBagTypeQuality(bagid)
 
   SetItemButtonCount(decoration, count)
   SetItemButtonQuality(decoration, false)
@@ -191,7 +191,7 @@ function itemFrame.itemProto:SetFreeSlots(bagid, slotid, count, name)
   SetItemButtonTexture(decoration, [[Interface\PaperDoll\UI-Backpack-EmptySlot]])
   self:UpdateCooldown()
   decoration.IconBorder:SetTexture([[Interface\Common\WhiteIconFrame]])
-  decoration.IconBorder:SetVertexColor(unpack(const.ITEM_QUALITY_COLOR[Enum.ItemQuality.Common]))
+  decoration.IconBorder:SetVertexColor(unpack(const.ITEM_QUALITY_COLOR[quality]))
   decoration.IconBorder:Show()
   decoration.IconQuestTexture:Hide()
   decoration.BattlepayItemTexture:SetShown(false)
@@ -199,13 +199,13 @@ function itemFrame.itemProto:SetFreeSlots(bagid, slotid, count, name)
   self.ilvlText:SetText("")
   decoration.UpgradeIcon:SetShown(false)
 
-  self.freeSlotName = name
-  SetItemButtonQuality(decoration, Enum.ItemQuality.Common, nil, false, false)
+  self.freeSlotName = self:GetBagType(bagid)
+  --SetItemButtonQuality(decoration, 4, nil, false, false)
   self:Unlock()
 
   decoration.IconBorder:SetBlendMode("BLEND")
   self.frame:SetAlpha(1)
-  events:SendMessage('item/Updated', self)
+  events:SendMessage('item/Updated', self, decoration)
   self.frame:Show()
   self.button:Show()
 end

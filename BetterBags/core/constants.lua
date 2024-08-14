@@ -9,6 +9,10 @@ local L = addon:GetModule('Localization')
 ---@class Constants: AceModule
 local const = addon:NewModule('Constants')
 
+---@class AnchorState
+---@field enabled boolean
+---@field shown boolean
+
 -- Constants for detecting WoW version.
 addon.isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
 addon.isClassic = WOW_PROJECT_ID == WOW_PROJECT_CLASSIC
@@ -32,6 +36,48 @@ const.BANK_TAB = {
   ACCOUNT_BANK_3 = Enum.BagIndex.AccountBankTab_3,
   ACCOUNT_BANK_4 = Enum.BagIndex.AccountBankTab_4,
   ACCOUNT_BANK_5 = Enum.BagIndex.AccountBankTab_5,
+}
+
+---@enum MovementFlowType
+const.MOVEMENT_FLOW = {
+  UNDEFINED = -1,
+  BANK = 0,
+  REAGENT = 1,
+  WARBANK = 2,
+  SENDMAIL = 3,
+  TRADE = 4,
+  NPCSHOP = 5
+}
+
+---@enum BindingScope  -- similar. but distinct from ItemBind
+const.BINDING_SCOPE = {
+  UNKNOWN = -1,
+  NONBINDING = 0,
+  BOUND = 1,
+  BOE = 2,
+  BOU = 3,
+  QUEST = 4,
+  SOULBOUND = 5,
+  REFUNDABLE = 6,
+  ACCOUNT = 7,
+  BNET = 8,
+  WUE = 9,
+}
+
+---@class BindingMap
+---@type table<number, string>
+const.BINDING_MAP = {
+  [const.BINDING_SCOPE.UNKNOWN] = L:G(""),
+  [const.BINDING_SCOPE.NONBINDING] = L:G("nonbinding"),
+  [const.BINDING_SCOPE.BOUND] = L:G(""),
+  [const.BINDING_SCOPE.BOE] = L:G("boe"),
+  [const.BINDING_SCOPE.BOU] = L:G("bou"),
+  [const.BINDING_SCOPE.QUEST] = L:G("quest"),
+  [const.BINDING_SCOPE.SOULBOUND] = L:G("soulbound"),
+  [const.BINDING_SCOPE.REFUNDABLE] = L:G("refundable"),
+  [const.BINDING_SCOPE.ACCOUNT] = L:G("warbound"),
+  [const.BINDING_SCOPE.BNET] = L:G("bnet"),
+  [const.BINDING_SCOPE.WUE] = L:G("wue"),
 }
 
 -- BANK_BAGS contains all the bags that are part of the bank, including
@@ -227,6 +273,36 @@ if not addon.isRetail then
   Enum.ItemQuality.WoWToken = 8
 end
 
+const.BAG_SUBTYPES = {
+  ["Bag"] = 0,
+  ["Soul Bag"] = 1,
+  ["Herb Bag"] = 2,
+  ["Enchanting Bag"] = 3,
+  ["Engineering Bag"] = 4,
+  ["Gem Bag"] = 5,
+  ["Mining Bag"] = 6,
+  ["Leatherworking Bag"] = 7,
+  ["Inscription Bag"] = 8,
+  ["Tackle Box"] = 9,
+  ["Cooking Bag"] = 10,
+}
+
+---@type table<number, Enum.ItemQuality>
+const.BAG_SUBTYPE_TO_QUALITY = {
+  [0] = Enum.ItemQuality.Poor,
+  [1] = Enum.ItemQuality.Epic,
+  [2] = Enum.ItemQuality.Uncommon,
+  [3] = Enum.ItemQuality.Rare,
+  [4] = Enum.ItemQuality.Artifact,
+  [5] = Enum.ItemQuality.Heirloom,
+  [6] = Enum.ItemQuality.Common,
+  [7] = Enum.ItemQuality.Common,
+  [8] = Enum.ItemQuality.Common,
+  [9] = Enum.ItemQuality.Common,
+  [10] = Enum.ItemQuality.Common,
+  [99] = Enum.ItemQuality.Common
+}
+
 ---@type table<string, Enum.ItemQuality>
 const.ITEM_QUALITY_TO_ENUM = {
   ITEM_QUALITY0_DESC = Enum.ItemQuality.Poor,
@@ -384,13 +460,6 @@ const.EQUIPMENT_SLOTS = {
   INVSLOT_WRIST,
 }
 
----@class CustomCategoryFilter
----@field name string
----@field enabled table<BagKind, boolean>
----@field itemList table<number, boolean>
----@field readOnly boolean
----@field predicate? string
-
 ---@class SizeInfo
 ---@field columnCount number
 ---@field itemsPerRow number
@@ -410,9 +479,14 @@ const.DATABASE_DEFAULTS = {
     showBagButton = true,
     debug = false,
     inBagSearch = true,
+    categorySell = false,
     showKeybindWarning = true,
     theme = 'Default',
     showFullSectionNames = {
+      [const.BAG_KIND.BACKPACK] = false,
+      [const.BAG_KIND.BANK] = false,
+    },
+    showAllFreeSpace = {
       [const.BAG_KIND.BACKPACK] = false,
       [const.BAG_KIND.BANK] = false,
     },
@@ -455,6 +529,21 @@ const.DATABASE_DEFAULTS = {
     positions = {
       [const.BAG_KIND.BACKPACK] = {},
       [const.BAG_KIND.BANK] = {},
+    },
+    anchorPositions = {
+      [const.BAG_KIND.BACKPACK] = {},
+      [const.BAG_KIND.BANK] = {},
+    },
+    ---@type table<BagKind, AnchorState>
+    anchorState = {
+      [const.BAG_KIND.BACKPACK] = {
+        enabled = false,
+        shown = false,
+      },
+      [const.BAG_KIND.BANK] = {
+        enabled = false,
+        shown = false,
+      },
     },
     sectionSort = {
       [const.BAG_KIND.BACKPACK] = {

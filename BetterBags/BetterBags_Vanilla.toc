@@ -3,9 +3,9 @@
 ## Title: BetterBags
 ## Notes: Better Bags for everyone!
 ## Author: Cidan
-## Version: v0.1.87
+## Version: v0.1.92
 ## SavedVariables: BetterBagsDB
-## X-Date: 2024-07-31T21:11:16Z
+## X-Date: 2024-08-14T04:16:15Z
 ## X-License: MIT
 ## X-Curse-Project-ID: 942432
 ## X-Wago-ID: aNDmy96o
@@ -58,6 +58,7 @@ util\trees\trees.lua
 util\trees\intervaltree.lua
 util\query.lua
 
+data\binding.lua
 data\search.lua
 data\equipmentsets.lua
 data\categories.lua
@@ -71,7 +72,9 @@ util\resize.lua
 util\sort.lua
 util\bucket.lua
 util\windowgroup.lua
+util\movementflow.lua
 
+frames\searchcategory.lua
 frames\question.lua
 frames\search.lua
 frames\slider.lua
@@ -94,12 +97,11 @@ frames\sectionitemlist.lua
 frames\sectionconfig.lua
 frames\themeconfig.lua
 frames\tabs.lua
+frames\anchor.lua
 frames\debug.lua
 
 views\views.lua
 views\gridview.lua
-views\oneview.lua
-views\listview.lua
 views\bagview.lua
 
 frames\bag.lua

@@ -28,6 +28,18 @@ function DB:GetBagPosition(kind)
 end
 
 ---@param kind BagKind
+---@return table
+function DB:GetAnchorPosition(kind)
+  return DB.data.profile.anchorPositions[kind]
+end
+
+---@param kind BagKind
+---@return AnchorState
+function DB:GetAnchorState(kind)
+  return DB.data.profile.anchorState[kind]
+end
+
+---@param kind BagKind
 ---@return BagView
 function DB:GetBagView(kind)
   return DB.data.profile.views[kind]
@@ -195,7 +207,7 @@ end
 ---@param itemID number
 ---@param category string
 function DB:SaveItemToCategory(itemID, category)
-  DB:CreateCategory(category)
+  assert(DB.data.profile.customCategoryFilters[category] ~= nil, "Category does not exist: " .. category)
   DB.data.profile.customCategoryFilters[category].itemList[itemID] = true
   local previousCategory = DB.data.profile.customCategoryIndex[itemID]
   if previousCategory and previousCategory ~= category then
@@ -217,7 +229,7 @@ end
 ---@param category string
 ---@param enabled boolean
 function DB:SetItemCategoryEnabled(kind, category, enabled)
-  DB:CreateCategory(category)
+  assert(DB.data.profile.customCategoryFilters[category] ~= nil, "Category does not exist: " .. category)
   DB.data.profile.customCategoryFilters[category].enabled[kind] = enabled
 end
 
@@ -254,16 +266,19 @@ function DB:GetAllItemCategories()
 end
 
 ---@param category string
----@return CustomCategoryFilter
+---@return CustomCategoryFilter?
 function DB:GetItemCategory(category)
-  DB:CreateCategory(category)
   return DB.data.profile.customCategoryFilters[category]
 end
 
 ---@param category string
----@return CustomCategoryFilter
+---@return CustomCategoryFilter?
 function DB:GetEphemeralItemCategory(category)
-  return DB.data.profile.ephemeralCategoryFilters[category] or {}
+  return DB.data.profile.ephemeralCategoryFilters[category]
+end
+
+function DB:GetAllEphemeralItemCategories()
+  return DB.data.profile.ephemeralCategoryFilters
 end
 
 ---@param category string
@@ -278,25 +293,27 @@ function DB:GetItemCategoryByItemID(itemID)
   return DB.data.profile.customCategoryFilters[DB.data.profile.customCategoryIndex[itemID]] or {}
 end
 
----@param category string
-function DB:CreateCategory(category)
-  DB.data.profile.customCategoryFilters[category] = DB.data.profile.customCategoryFilters[category] or {itemList = {}}
-  DB.data.profile.customCategoryFilters[category].itemList = DB.data.profile.customCategoryFilters[category].itemList or {}
-  DB.data.profile.customCategoryFilters[category].name = category
-  DB.data.profile.customCategoryFilters[category].enabled = DB.data.profile.customCategoryFilters[category].enabled or {
-    [const.BAG_KIND.BACKPACK] = true,
-    [const.BAG_KIND.BANK] = true
-  }
+---@param category CustomCategoryFilter
+function DB:CreateOrUpdateCategory(category)
+  if category.save then
+    DB.data.profile.customCategoryFilters[category.name] = category
+    for itemID, _ in pairs(category.itemList) do
+      DB.data.profile.customCategoryIndex[itemID] = category.name
+    end
+  else
+    DB.data.profile.ephemeralCategoryFilters[category.name] = {
+      name = category.name,
+      enabled = category.enabled,
+      dynamic = category.dynamic,
+      itemList = {},
+    }
+  end
 end
 
 ---@param category string
-function DB:CreateEpemeralCategory(category)
-  DB.data.profile.ephemeralCategoryFilters[category] = DB.data.profile.ephemeralCategoryFilters[category] or {}
-  DB.data.profile.ephemeralCategoryFilters[category].name = category
-  DB.data.profile.ephemeralCategoryFilters[category].enabled = DB.data.profile.ephemeralCategoryFilters[category].enabled or {
-    [const.BAG_KIND.BACKPACK] = true,
-    [const.BAG_KIND.BANK] = true
-  }
+---@return boolean
+function DB:IsSearchCategory(category)
+  return DB.data.profile.searchCategories[category] ~= nil
 end
 
 ---@param category string
@@ -372,6 +389,16 @@ function DB:GetInBagSearch()
   return DB.data.profile.inBagSearch
 end
 
+---@param enabled boolean
+function DB:SetCategorySell(enabled)
+  DB.data.profile.categorySell = enabled
+end
+
+---@return boolean
+function DB:GetCategorySell()
+  return DB.data.profile.categorySell
+end
+
 function DB:GetStackingOptions(kind)
   return DB.data.profile.stacking[kind]
 end
@@ -426,7 +453,38 @@ function DB:GetTheme()
   return DB.data.profile.theme
 end
 
+---@param kind BagKind
+---@return boolean
+function DB:GetShowAllFreeSpace(kind)
+  return DB.data.profile.showAllFreeSpace[kind]
+end
+
+---@param kind BagKind
+---@param value boolean
+function DB:SetShowAllFreeSpace(kind, value)
+  DB.data.profile.showAllFreeSpace[kind] = value
+end
+
 function DB:Migrate()
+
+  --[[
+    Deletion of the old lockedItems table.
+    Do not remove before Q1'25.
+  ]]--
+  DB.data.profile.lockedItems = {}
+
+  --[[
+    Migration away from multi-view bags and bank to a single view.
+    Do not remove before Q1'25.
+  ]]--
+  if DB:GetBagView(const.BAG_KIND.BACKPACK) ~= const.BAG_VIEW.SECTION_GRID and DB:GetBagView(const.BAG_KIND.BACKPACK) ~= const.BAG_VIEW.SECTION_ALL_BAGS then
+    DB:SetBagView(const.BAG_KIND.BACKPACK, const.BAG_VIEW.GRID)
+  end
+
+  if DB:GetBagView(const.BAG_KIND.BANK) ~= const.BAG_VIEW.SECTION_GRID and DB:GetBagView(const.BAG_KIND.BANK) ~= const.BAG_VIEW.SECTION_ALL_BAGS then
+    DB:SetBagView(const.BAG_KIND.BANK, const.BAG_VIEW.GRID)
+  end
+
   --[[
     Migration of the custom category filters from single filter to per-bag filter.
     Do not remove before Q4'24.

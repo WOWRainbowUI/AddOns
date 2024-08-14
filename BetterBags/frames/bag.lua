@@ -82,6 +82,9 @@ local themes = addon:GetModule('Themes')
 ---@class WindowGroup: AceModule
 local windowGroup = addon:GetModule('WindowGroup')
 
+---@class Anchor: AceModule
+local anchor = addon:GetModule('Anchor')
+
 ---@class Tabs: AceModule
 local tabs = addon:GetModule('Tabs')
 
@@ -96,6 +99,7 @@ local tabs = addon:GetModule('Tabs')
 ---@field kind BagKind
 ---@field currentView View
 ---@field frame Frame The fancy frame of the bag.
+---@field anchor AnchorFrame The anchor frame for the bag.
 ---@field bottomBar Frame The bottom bar of the bag.
 ---@field recentItems Section The recent items section.
 ---@field currencyFrame CurrencyFrame The currency frame.
@@ -329,6 +333,15 @@ function bagFrame.bagProto:OnResize()
   if database:GetBagView(self.kind) == const.BAG_VIEW.LIST and self.currentView ~= nil then
     self.currentView:UpdateListSize(self)
   end
+  if self.anchor:IsActive() then
+    self.frame:ClearAllPoints()
+    self.frame:SetPoint(self.anchor.anchorPoint, self.anchor.frame, self.anchor.anchorPoint)
+    --- HACKFIX(lobato): This fixes a bug in the WoW rendering engine.
+    -- The frame needs to be polled in some way for it to render correctly in the pipeline,
+    -- otherwise relative frames will not always render correctly across the bottom edge.
+    self.frame:GetBottom()
+    return
+  end
   --Window.RestorePosition(self.frame)
   if self.previousSize and database:GetBagView(self.kind) ~= const.BAG_VIEW.LIST and self.loaded then
     local left = self.frame:GetLeft()
@@ -447,7 +460,11 @@ function bagFrame.bagProto:CreateCategoryForItemInCursor()
   function(input)
     if input == nil then return end
     if input == "" then return end
-    categories:AddItemToPersistentCategory(itemID, input)
+    categories:CreateCategory({
+      name = input,
+      itemList = {[itemID] = true},
+      save = true,
+    })
     events:SendMessage('bags/FullRefreshAll')
   end)
   GameTooltip:Hide()
@@ -507,9 +524,7 @@ function bagFrame:Create(kind)
   --end)
 
   b.views = {
-    [const.BAG_VIEW.ONE_BAG] = views:NewOneBag(f, b.kind),
     [const.BAG_VIEW.SECTION_GRID] = views:NewGrid(f, b.kind),
-    [const.BAG_VIEW.LIST] = views:NewList(f, b.kind),
     [const.BAG_VIEW.SECTION_ALL_BAGS] = views:NewBagView(f, b.kind),
   }
 
@@ -636,6 +651,7 @@ function bagFrame:Create(kind)
     b:OnResize()
   end)
 
+  b.anchor = anchor:New(kind, b.frame, name)
   -- Load the bag position from settings.
   Window.RestorePosition(b.frame)
   b.previousSize = b.frame:GetBottom()
@@ -648,6 +664,7 @@ function bagFrame:Create(kind)
     local fw, fh = b.frame:GetSize()
     database:SetBagViewFrameSize(b.kind, database:GetBagView(b.kind), fw, fh)
   end)
+  b.resizeHandle:Hide()
   b:KeepBagInBounds()
 
   if b.kind == const.BAG_KIND.BACKPACK then

@@ -275,7 +275,7 @@ function itemFrame.itemProto:SetItemFromData(data)
   self.isFreeSlot = nil
   self:SetAlpha(1)
   if self.slotkey ~= nil then
-    events:SendMessage('item/Updated', self)
+    events:SendMessage('item/Updated', self, decoration)
   end
   decoration:SetFrameLevel(self.button:GetFrameLevel() - 1)
   self.frame:Show()
@@ -353,12 +353,43 @@ function itemFrame.itemProto:SetSize(width, height)
   decoration.IconOverlay:SetSize(width, height)
 end
 
+---@param bagid number
+---@return string
+function itemFrame.itemProto:GetBagType(bagid)
+  local invid = C_Container.ContainerIDToInventoryID(bagid)
+  local baglink = GetInventoryItemLink("player", invid)
+  if baglink ~= nil and invid ~= nil then
+    local class, subclass = select(6, C_Item.GetItemInfoInstant(baglink)) --[[@as number]]
+    local name = C_Item.GetItemSubClassInfo(class, subclass)
+    return name
+  else
+    local name = C_Item.GetItemSubClassInfo(Enum.ItemClass.Container, 0)
+    return name
+  end
+end
+
+---@param bagid number
+---@return Enum.ItemQuality
+function itemFrame.itemProto:GetBagTypeQuality(bagid)
+  local invid = C_Container.ContainerIDToInventoryID(bagid)
+  local baglink = GetInventoryItemLink("player", invid)
+  if baglink ~= nil and invid ~= nil then
+    local class, subclass = select(6, C_Item.GetItemInfoInstant(baglink)) --[[@as number]]
+    if class == Enum.ItemClass.Quiver then
+      return const.BAG_SUBTYPE_TO_QUALITY[99]
+    end
+    return const.BAG_SUBTYPE_TO_QUALITY[subclass]
+  else
+    return const.BAG_SUBTYPE_TO_QUALITY[0]
+  end
+end
+
 -- SetFreeSlots will set the item button to a free slot.
 ---@param bagid number
 ---@param slotid number
 ---@param count number
----@param name string
-function itemFrame.itemProto:SetFreeSlots(bagid, slotid, count, name)
+---@param nocount? boolean
+function itemFrame.itemProto:SetFreeSlots(bagid, slotid, count, nocount)
   local decoration = themes:GetItemButton(self)
   self.slotkey = items:GetSlotKeyFromBagAndSlot(bagid, slotid)
   if const.BANK_BAGS[bagid] or const.REAGENTBANK_BAGS[bagid] then
@@ -383,7 +414,9 @@ function itemFrame.itemProto:SetFreeSlots(bagid, slotid, count, name)
   ClearItemButtonOverlay(decoration)
   decoration:SetHasItem(false)
   self.button:SetHasItem(false)
-  SetItemButtonCount(decoration, count)
+  if not nocount then
+    SetItemButtonCount(decoration, count)
+  end
   decoration:SetItemButtonTexture(0)
   decoration:UpdateQuestItem(false, nil, nil)
   decoration:UpdateNewItem(false)
@@ -395,13 +428,16 @@ function itemFrame.itemProto:SetFreeSlots(bagid, slotid, count, name)
   self.ilvlText:Hide()
   decoration.UpgradeIcon:SetShown(false)
 
-  self.freeSlotName = name
-  SetItemButtonQuality(decoration, Enum.ItemQuality.Common, nil, false, false)
-
+  self.freeSlotName = self:GetBagType(bagid)
+  if database:GetShowAllFreeSpace(self.kind) and const.BACKPACK_ONLY_REAGENT_BAGS[bagid] then
+    SetItemButtonQuality(decoration, Enum.ItemQuality.Uncommon, nil, false, false)
+  else
+    SetItemButtonQuality(decoration, Enum.ItemQuality.Common, nil, false, false)
+  end
   self.isFreeSlot = true
   decoration.ItemSlotBackground:Show()
   self.frame:SetAlpha(1)
-  events:SendMessage('item/Updated', self)
+  events:SendMessage('item/Updated', self, decoration)
   self.frame:Show()
   self.button:Show()
 end

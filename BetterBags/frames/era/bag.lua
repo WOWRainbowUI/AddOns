@@ -73,6 +73,9 @@ local windowGroup = addon:GetModule('WindowGroup')
 ---@class Context: AceModule
 local context = addon:GetModule('Context')
 
+---@class Anchor: AceModule
+local anchor = addon:GetModule('Anchor')
+
 function bagFrame.bagProto:SwitchToBankAndWipe()
   if self.kind == const.BAG_KIND.BACKPACK then return end
   self.bankTab = const.BANK_TAB.BANK
@@ -154,9 +157,7 @@ function bagFrame:Create(kind)
   --end)
 
   b.views = {
-    [const.BAG_VIEW.ONE_BAG] = views:NewOneBag(f, b.kind),
     [const.BAG_VIEW.SECTION_GRID] = views:NewGrid(f, b.kind),
-    [const.BAG_VIEW.LIST] = views:NewList(f, b.kind),
     [const.BAG_VIEW.SECTION_ALL_BAGS] = views:NewBagView(f, b.kind),
   }
 
@@ -303,6 +304,8 @@ function bagFrame:Create(kind)
   b.frame:SetScript("OnSizeChanged", function()
     b:OnResize()
   end)
+
+  b.anchor = anchor:New(kind, b.frame, name)
   -- Load the bag position from settings.
   Window.RestorePosition(b.frame)
 
@@ -310,6 +313,7 @@ function bagFrame:Create(kind)
     local fw, fh = b.frame:GetSize()
     database:SetBagViewFrameSize(b.kind, database:GetBagView(b.kind), fw, fh)
   end)
+  b.resizeHandle:Hide()
   b:KeepBagInBounds()
 
   if b.kind == const.BAG_KIND.BACKPACK then
