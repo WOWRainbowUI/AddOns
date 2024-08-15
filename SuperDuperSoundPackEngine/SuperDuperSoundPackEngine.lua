@@ -43,25 +43,25 @@ local LAST_ENEMY_PLAYER_TARGET_GUID = nil
 local BOSSID = {}
 local MAX_COMBO_POINTS = 5
 local SHIELDBUFFS = {
-	[GetSpellInfo(17--[[Power Word: Shield]]) or ""] = true,
-	[GetSpellInfo(642--[[Divine Shield]]) or ""] = true,
-	[GetSpellInfo(1463--[[Mana Shield]]) or ""] = true,
-	[GetSpellInfo(11426--[[Ice Barrier]]) or ""] = true,
-	[GetSpellInfo(7812--[[Sacrifice]]) or ""] = true,
+	[C_Spell.GetSpellName(17--[[Power Word: Shield]]) or ""] = true,
+	[C_Spell.GetSpellName(642--[[Divine Shield]]) or ""] = true,
+	[C_Spell.GetSpellName(1463--[[Mana Shield]]) or ""] = true,
+	[C_Spell.GetSpellName(11426--[[Ice Barrier]]) or ""] = true,
+	[C_Spell.GetSpellName(7812--[[Sacrifice]]) or ""] = true,
 }
 SHIELDBUFFS[""] = nil
 local FORMBUFFS = {
-	[GetSpellInfo(1066--[[Aquatic Form]]) or ""] = true,
-	[GetSpellInfo(5487--[[Bear Form]]) or ""] = true,
-	[GetSpellInfo(768--[[Cat Form]]) or ""] = true,
-	[GetSpellInfo(9634--[[Dire Bear Form]]) or ""] = true,
-	[GetSpellInfo(33943--[[Flight Form]]) or ""] = true,
-	[GetSpellInfo(24858--[[Moonkin Form]]) or ""] = true,
-	[GetSpellInfo(40120--[[Swift Flight Form]]) or ""] = true,
-	[GetSpellInfo(783--[[Travel Form]]) or ""] = true,
-	[GetSpellInfo(65139--[[Tree of Life]]) or ""] = true,
-	[GetSpellInfo(2645--[[Ghost Wolf]]) or ""] = true,
-	[GetSpellInfo(59672--[[Metamorphosis]]) or ""] = true,
+	[C_Spell.GetSpellName(1066--[[Aquatic Form]]) or ""] = true,
+	[C_Spell.GetSpellName(5487--[[Bear Form]]) or ""] = true,
+	[C_Spell.GetSpellName(768--[[Cat Form]]) or ""] = true,
+	[C_Spell.GetSpellName(9634--[[Dire Bear Form]]) or ""] = true,
+	[C_Spell.GetSpellName(33943--[[Flight Form]]) or ""] = true,
+	[C_Spell.GetSpellName(24858--[[Moonkin Form]]) or ""] = true,
+	[C_Spell.GetSpellName(40120--[[Swift Flight Form]]) or ""] = true,
+	[C_Spell.GetSpellName(783--[[Travel Form]]) or ""] = true,
+	[C_Spell.GetSpellName(65139--[[Tree of Life]]) or ""] = true,
+	[C_Spell.GetSpellName(2645--[[Ghost Wolf]]) or ""] = true,
+	[C_Spell.GetSpellName(59672--[[Metamorphosis]]) or ""] = true,
 }
 FORMBUFFS[""] = nil
 
@@ -123,10 +123,10 @@ local function IsShield(buff)
 		return SHIELDBUFFS[buff]
 	else
 		for i=1,40 do
-			local name = UnitBuff("player",i)
-			if name then
+			local aura = C_UnitAuras.GetBuffDataByIndex("player",i)
+			if aura then
 				for n in pairs(SHIELDBUFFS) do
-					if name == n then
+					if aura.name == n then
 						return true
 					end
 				end
