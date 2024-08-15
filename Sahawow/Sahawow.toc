@@ -1,0 +1,9 @@
+﻿## Interface: 11503, 30403, 40400, 110002
+## Title: Sahawow
+## Version: 11.0.2
+## IconTexture: Interface\AddOns\Sahawow\z_shw
+## Notes: 聲音包【Sahawow】取代遊戲內的音樂和音效，提供不同的遊戲體驗。
+## Title-zhTW: |cFF00FFFF[音樂]|r |cFFFF99FF[聲音取代插件]|r Sahawow
+## Notes-zhTW: 聲音包【Sahawow】取代遊戲內的音樂和音效，提供不同的遊戲體驗。
+## Dependencies: SuperDuperSoundPackEngine
+Index.lua
