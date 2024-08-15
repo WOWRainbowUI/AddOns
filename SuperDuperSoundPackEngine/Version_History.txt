@@ -1,0 +1,197 @@
+
+
+
+== Version 1.19
+
+* Added a targeted_boss_low_health_percent flag.
+
+
+== Version 1.18
+
+* Fixed possible divided by zero bug.
+
+
+== Version 1.17
+
+* Bumped TOC to 50001.
+* Fixed some code for MoP.
+
+
+== Version 1.16
+
+* Updated to the 6.0 version of the BigLibTimer library.
+
+
+== Version 1.15
+
+* Updated to the 5.1 version of the BigLibTimer library.
+
+
+== Version 1.14
+
+* Updated to the 5.0 version of the BigLibTimer library.
+
+
+== Version 1.13
+
+* Updated to the 4.2 version of the BigLibTimer library.
+
+
+== Version 1.12
+
+* Updated to the 4.0 version of the BigLibTimer library.
+
+
+== Version 1.11
+
+* Sound files that are not played as music are now controlled by the game client's sound effects volume level.
+
+
+== Version 1.10.4
+
+* Added support for the latest sound pack template.
+
+
+== Version 1.10.3
+
+* Bumped TOC to 40300.
+
+
+== Version 1.10.2
+
+* Added support for Brazilian Portuguese translation.
+
+
+== Version 1.10.1
+
+* Fixed a bug where the regular music was being disabled even if you had music disabled in this addon's settings.
+
+
+== Version 1.10
+
+* Added customizable emote triggers.
+
+
+== Version 1.9.2
+
+* Updated the code to be more responsive when switching sound packs.
+
+
+== Version 1.9.1
+
+* Fixed minor error if you do not have any sound-packs loaded.
+
+
+== Version 1.9
+
+* Added customizable my_spell_cast and pet_spell_cast triggers.
+
+
+== Version 1.8.3
+
+* Edited the placement inside the options window.
+
+
+== Version 1.8.2
+
+* Placed all the configurations in a single options window.
+
+
+== Version 1.8.1
+
+* Added the SuperDuperSoundPackEngine.Get function to allow adding or replacing configurations in an already existing sound-pack.
+* Added the SuperDuperSoundPackEngine.Register function to replace the Register_SuperDuperSoundPackEngine_SoundPack function.
+
+
+== Version 1.8
+
+* Added some new sound pack variables.
+** quest_accepted
+** quest_accepted_play_time
+** quest_accepted_delay_time
+** quest_completed
+** quest_completed_play_time
+** quest_completed_delay_time
+** summoned
+** money_gain
+** money_loss
+* Will now allow a selected sound-pack to be previewed in the options window when the setting has not yet been saved.
+* Will now return music to regular in game music if no music files are specified in the selected sound-pack.
+* Added compatibility for the newly released template sound-pack that includes no sound files for faster downloading.
+
+
+== Version 1.7.3
+
+* Removed error when trying to reset configurations back to defaults.
+
+
+== Version 1.7.2
+
+* Repaired localization fonts for some languages in the XML file directly.
+
+
+== Version 1.7.1
+
+* Repaired drop down menu.
+
+
+== Version 1.7
+
+* Added a few missing sound pack variables.
+** Added a targeted_boss_reached_low_health_play_time variable.
+
+
+== Version 1.6.1
+
+* Repaired localization fonts for some languages.
+
+
+== Version 1.6
+
+* Repaired localization fonts for some languages.
+
+
+== Version 1.5.2
+
+* Repaired toc file.
+
+
+== Version 1.5.1
+
+* Bumped TOC to 40200.
+
+
+== Version 1.5
+
+* Repaired combat music playing properly.
+
+
+== Version 1.4
+
+* Will now more accurately play the sound when opening the game or options menu.
+
+
+== Version 1.3.1
+
+* Added a description box for sound packs to use.
+
+
+== Version 1.3
+
+* Compensated for the additional parameters added to the COMBAT_LOG_EVENT_UNFILTERED event for the game client version 4.2.
+
+
+== Version 1.2
+
+* Added a full_combo_points_or_rage_repeat_time variable that may be configured in created sound packs.
+
+
+== Version 1.1
+
+* Added Version argument to the Register_SuperDuperSoundPackEngine_SoundPack function.
+
+
+== Version 1.0
+
+* First release.
+

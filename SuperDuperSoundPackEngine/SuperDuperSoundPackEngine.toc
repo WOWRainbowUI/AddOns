@@ -1,0 +1,19 @@
+﻿## Interface: 110000, 110002
+## Version: 11.0
+## Title: Super-Duper Sound Pack Engine
+## IconTexture: Interface\AddOns\SuperDuperSoundPackEngine\z_shw
+## Author: BigRedBrent
+## Notes: This addon will add sounds to the game from compatible sound packs.
+## Title-zhTW: |cFF00FFFF[音樂]|r |cFFFF99FF[聲音取代插件]|r 主程式
+## Notes-zhTW: 聲音取代插件主程式（請勿關閉）。需搭配Sahawow一起使用。
+## URL: http://www.curse.com/addons/wow/superdupersoundpackengine
+## SavedVariablesPerCharacter: SuperDuperSoundPackEngineAddonConfig
+## OptionalDeps: BigLibTimer
+## X-Curse-Packaged-Version: 8.01
+## X-Curse-Project-Name: Super-Duper Sound Pack Engine
+## X-Curse-Project-ID: superdupersoundpackengine
+## X-Curse-Repository-ID: wow/superdupersoundpackengine/mainline
+libs\BigLibTimer\LibStub\LibStub.lua
+libs\BigLibTimer\BigLibTimer.lua
+Load.xml
+OptionsFrame.xml
