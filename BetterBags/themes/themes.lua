@@ -15,6 +15,9 @@ local debug = addon:GetModule('Debug')
 ---@class Events: AceModule
 local events = addon:GetModule('Events')
 
+---@class Async: AceModule
+local async = addon:GetModule('Async')
+
 ---@class Database: AceModule
 local db = addon:GetModule('Database')
 
@@ -295,7 +298,9 @@ function themes:GetTabButton(tab)
   local tabIndex = tab.index
   local decoration = self.tabs[tabIndex]
   if decoration then
-    decoration:Show()
+    async:AfterCombat(function()
+      decoration:Show()
+    end)
     return decoration
   end
   decoration = themes.CreateDefaultTabDecoration(tab)
@@ -303,10 +308,14 @@ function themes:GetTabButton(tab)
   return decoration
 end
 
----@param tab Button
+---@param tab TabButton
 ---@return PanelTabButtonTemplate
 function themes.CreateDefaultTabDecoration(tab)
-  local decoration = CreateFrame("button", tab:GetName() .. "default", tab, "PanelTabButtonTemplate") --[[@as PanelTabButtonTemplate]]
+  local decoration = CreateFrame("button", tab:GetName() .. "default", tab, "BetterBagsSecureBagTabTemplate") --[[@as PanelTabButtonTemplate]]
+  if tab.sabtClick then
+    decoration:SetAttribute("type", "click")
+    decoration:SetAttribute("clickbutton", tab.sabtClick)
+  end
   decoration:SetPoint("TOPLEFT", tab, "TOPLEFT", 0, 0)
   decoration:RegisterForClicks("LeftButtonDown", "RightButtonDown")
   return decoration
