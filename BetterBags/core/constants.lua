@@ -12,6 +12,7 @@ local const = addon:NewModule('Constants')
 ---@class AnchorState
 ---@field enabled boolean
 ---@field shown boolean
+---@field staticPoint? string
 
 -- Constants for detecting WoW version.
 addon.isRetail = WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
@@ -67,17 +68,17 @@ const.BINDING_SCOPE = {
 ---@class BindingMap
 ---@type table<number, string>
 const.BINDING_MAP = {
-  [const.BINDING_SCOPE.UNKNOWN] = L:G(""),
-  [const.BINDING_SCOPE.NONBINDING] = L:G("nonbinding"),
-  [const.BINDING_SCOPE.BOUND] = L:G(""),
-  [const.BINDING_SCOPE.BOE] = L:G("boe"),
-  [const.BINDING_SCOPE.BOU] = L:G("bou"),
-  [const.BINDING_SCOPE.QUEST] = L:G("quest"),
-  [const.BINDING_SCOPE.SOULBOUND] = L:G("soulbound"),
-  [const.BINDING_SCOPE.REFUNDABLE] = L:G("refundable"),
-  [const.BINDING_SCOPE.ACCOUNT] = L:G("warbound"),
-  [const.BINDING_SCOPE.BNET] = L:G("bnet"),
-  [const.BINDING_SCOPE.WUE] = L:G("wue"),
+  [const.BINDING_SCOPE.UNKNOWN] = "",
+  [const.BINDING_SCOPE.NONBINDING] = "nonbinding",
+  [const.BINDING_SCOPE.BOUND] = "",
+  [const.BINDING_SCOPE.BOE] = "boe",
+  [const.BINDING_SCOPE.BOU] = "bou",
+  [const.BINDING_SCOPE.QUEST] = "quest",
+  [const.BINDING_SCOPE.SOULBOUND] = "soulbound",
+  [const.BINDING_SCOPE.REFUNDABLE] = "refundable",
+  [const.BINDING_SCOPE.ACCOUNT] = "warbound",
+  [const.BINDING_SCOPE.BNET] = "bnet",
+  [const.BINDING_SCOPE.WUE] = "wue",
 }
 
 -- BANK_BAGS contains all the bags that are part of the bank, including
@@ -487,6 +488,10 @@ const.DATABASE_DEFAULTS = {
       [const.BAG_KIND.BANK] = false,
     },
     showAllFreeSpace = {
+      [const.BAG_KIND.BACKPACK] = false,
+      [const.BAG_KIND.BANK] = false,
+    },
+    extraGlowyButtons = {
       [const.BAG_KIND.BACKPACK] = false,
       [const.BAG_KIND.BANK] = false,
     },

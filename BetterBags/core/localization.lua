@@ -4,12 +4,13 @@ local addonName = ... ---@type string
 local addon = LibStub('AceAddon-3.0'):GetAddon(addonName)
 
 ---@class Localization: AceModule
----@field data table<string, string>
+---@field data table<string, table<string, string>>
 local L = addon:NewModule('Localization')
 
 -- Data is set outside of the initialization function so that
 -- it loads when the file is read.
 L.data = {}
+L.locale = GetLocale()
 
 if GetLocale() == "zhTW" then
 	-- bagbutton.lua
@@ -460,15 +461,8 @@ end
 ---@param key string
 ---@return string
 function L:G(key)
-  return self.data[key] or key
-end
-
--- S sets the localized string for the given key.
----@param key string
----@param value string
----@return nil
-function L:S(key, value)
-  self.data[key] = value
+  if not self.data[key] then return key end
+  return self.data[key][L.locale] or key
 end
 
 L:Enable()
